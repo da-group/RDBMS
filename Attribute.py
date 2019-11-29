@@ -3,6 +3,7 @@ from Type import *
 
 
 class Attribute(object):
+
   '''
   self.type: Element of AttrTypes
   self.key: list of Elements of AttrKeys
@@ -31,6 +32,11 @@ class Attribute(object):
     return res
 
 
+  def __getitem__(self, index):
+    assert index<len(self.__values)
+    return self.__values[index]
+
+
   def addValue(self, v):
     '''
     First check value-type consistency.
@@ -43,13 +49,13 @@ class Attribute(object):
     '''
     index: integer
     '''
-    self.value.remove(index)
+    self.__values.pop(index)
 
 
   def updateValue(self, index, v):
     assert isinstance(v, TypeDict[self.type.value]), "wrong type of value!"
     assert index<len(self.__values)
-    self.value[index] = v
+    self.__values[index] = v
 
 
   def getSize(self):
@@ -62,4 +68,7 @@ class Attribute(object):
 if __name__=='__main__':
     a = Attribute(name="a1", type=AttrTypes.INT, key=[AttrKeys.PRIMARY])
     a.addValue(1)
-    print(a)
+    a.addValue(1)
+    a.updateValue(0, 2)
+    a.deleteValue(0)
+    print(a[0])
