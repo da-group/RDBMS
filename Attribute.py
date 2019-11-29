@@ -41,10 +41,17 @@ class Attribute(object):
 
   def addValue(self, v):
     '''
-    First check value-type consistency.
+    should check value-type consistency.
     '''
-    assert isinstance(v, TypeDict[self.type.value]), "wrong type of value!"
-    self.__values.append(v)
+    if AttrKeys.NOT_NULL in self.key:
+      assert v, "Not null key!"
+      assert isinstance(v, TypeDict[self.type.value]), "wrong type of value!"
+    else:
+      if v==None:
+        self.__values.append(v)
+      else:
+        assert isinstance(v, TypeDict[self.type.value]), "wrong type of value!"
+        self.__values.append(v)
 
 
   def deleteValue(self, index):
@@ -81,21 +88,34 @@ class Attribute(object):
     '''
     res = []
     for i in range(len(self.__values)):
-      if (condition(self.__values[i])):
+      if self.__values[i] and (condition(self.__values[i])):
         res.append(i)
+    return res
+
+
+  def getAttributeByIndex(self, index):
+    '''
+    this method assumes index list does not contain duplicate elements
+                        and the index list is in an ascending order
+                        and the elements are no larger than len(self.__value)
+    index: list of integers
+    '''
+    res = Attribute(name=self.name, type=self.type, key=self.key)
+    for i in index:
+      res.addValue(self.__values[i])
     return res
     
 
 
-
-
 if __name__=='__main__':
-    a = Attribute(name="a1", type=AttrTypes.INT, key=[AttrKeys.PRIMARY])
+    a = Attribute(name="a1", type=AttrTypes.INT, key=[AttrKeys.NULL])
+    a.addValue(None)
     a.addValue(1)
     a.addValue(1)
-    a.addValue(1)
-    a.updateValue(0, 2)
+    # a.updateValue(0, 2)
     # a.deleteValue([0, 1])
     c = condition('greater', 0)
-    print(a.getIndexByCondition(c))
-    print(a[0])
+    index = a.getIndexByCondition(c)
+    print(index)
+    a1 = a.getAttributeByIndex(index)
+    print(a1[0])
