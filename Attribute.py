@@ -5,8 +5,9 @@ from Type import *
 class Attribute(object):
 
   '''
-  self.type: Element of AttrTypes
-  self.key: list of Elements of AttrKeys
+    self.name: str
+    self.type: Element of AttrTypes
+    self.key: list of Elements of AttrKeys
   '''
 
   def __init__(self, **args):
@@ -33,7 +34,7 @@ class Attribute(object):
 
 
   def __getitem__(self, index):
-    assert index<len(self.__values)
+    assert index<len(self.__values) and index>=0, "out of list bounding"
     return self.__values[index]
 
 
@@ -47,19 +48,41 @@ class Attribute(object):
 
   def deleteValue(self, index):
     '''
-    index: integer
+    index: integer or list
     '''
-    self.__values.pop(index)
+    if isinstance(index, int):
+      index = [index]
+    index = sorted(index, reverse=True)
+    print(self.__values)
+    print(index)
+    for i in index:
+      assert i<len(self.__values) and i>=0, "out of list bounding"
+      self.__values.pop(i)
 
 
   def updateValue(self, index, v):
+    '''
+    index: integer
+    '''
     assert isinstance(v, TypeDict[self.type.value]), "wrong type of value!"
-    assert index<len(self.__values)
+    assert index<len(self.__values) and index>=0, "out of list bounding"
     self.__values[index] = v
 
 
   def getSize(self):
     return len(self.__values)
+
+
+  def getIndexByCondition(self, condition):
+    '''
+    condition: function with arguments of attribute value
+    return list of index satisfy the condition
+    '''
+    res = []
+    for i in range(len(self.__values)):
+      if (condition(self.__values[i])):
+        res.append(i)
+    return res
     
 
 
@@ -69,6 +92,7 @@ if __name__=='__main__':
     a = Attribute(name="a1", type=AttrTypes.INT, key=[AttrKeys.PRIMARY])
     a.addValue(1)
     a.addValue(1)
+    a.addValue(1)
     a.updateValue(0, 2)
-    a.deleteValue(0)
+    a.deleteValue([0, 1])
     print(a[0])
