@@ -1,5 +1,6 @@
 import os
 from Type import *
+from Condition import condition
 
 
 class Attribute(object):
@@ -94,5 +95,7 @@ if __name__=='__main__':
     a.addValue(1)
     a.addValue(1)
     a.updateValue(0, 2)
-    a.deleteValue([0, 1])
+    # a.deleteValue([0, 1])
+    c = condition('greater', 0)
+    print(a.getIndexByCondition(c))
     print(a[0])
