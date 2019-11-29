@@ -7,13 +7,14 @@ class Attribute(object):
   self.type: Element of AttrTypes
   self.key: list of Elements of AttrKeys
   '''
+
   def __init__(self, **args):
     self.name = args['name']
     self.type = args['type']
     self.key = args.get('key', [AttrKeys.NULL])
-    self.values = []
+    self.__values = []
 
-    # Primary key is also not null
+    #  key is also not null
     if not isinstance(self.key, list):
       self.key = [self.key]
     if len(self.key)==1 and self.key[0]==AttrKeys.PRIMARY:
@@ -22,12 +23,11 @@ class Attribute(object):
     assert not (AttrKeys.NOT_NULL in self.key and AttrKeys.NULL in self.key), "impossible combination"
 
 
-
   def __str__(self):
     res = "name: "+self.name+"\n" + \
           "type: "+str(self.type.value)+"\n" + \
           "key property: "+str([ele.value for ele in self.key])+"\n" + \
-          "num of values: "+str(len(self.values))
+          "num of values: "+str(len(self.__values))
     return res
 
 
@@ -36,7 +36,7 @@ class Attribute(object):
     First check value-type consistency.
     '''
     assert isinstance(v, TypeDict[self.type.value]), "wrong type of value!"
-    self.values.append(v)
+    self.__values.append(v)
 
 
   def deleteValue(self, index):
@@ -48,12 +48,12 @@ class Attribute(object):
 
   def updateValue(self, index, v):
     assert isinstance(v, TypeDict[self.type.value]), "wrong type of value!"
-    assert index<len(self.values)
+    assert index<len(self.__values)
     self.value[index] = v
 
 
   def getSize(self):
-    return len(self.values)
+    return len(self.__values)
     
 
 
