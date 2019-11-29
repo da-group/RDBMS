@@ -23,7 +23,6 @@ class AttrTypes(Enum):
 
 class AttrKeys(Enum):
     PRIMARY = 'PRIMARY KEY'
-    INCREMENT = 'AUTO_INCREMENT'
     NOT_NULL = 'NOT NULL'
     NULL = 'NULL'
 
