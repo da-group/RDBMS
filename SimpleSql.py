@@ -1,4 +1,5 @@
 import os
+from Parser import parseCondition
 
 class SimpleSql(object):
   '''
@@ -66,7 +67,8 @@ class SimpleSql(object):
     while True:
       statement = input('SimpleSql> ')
       try:
-        print(statement)
+        conditions = parseCondition(statement)
+        print(conditions)
         pass
       except Exception as e:
         print("SimpleSql> "+str(e))

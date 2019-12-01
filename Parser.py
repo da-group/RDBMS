@@ -23,10 +23,22 @@ def standardize(strings):
   return res
 
 
+
 def parseAction(string):
   pass
 
 
+
+def parseFroms(statement):
+  pass
+
+
+def parseJoins(statement):
+  pass
+
+
+
+######################## methods used for condition parsing ##############################
 def __isNumber(num):
   pattern = re.compile(r'^[-+]?[-0-9]\d*\.\d*|[-+]?\.?[0-9]\d*$')
   result = pattern.match(num)
@@ -121,6 +133,21 @@ def parseCondition(statement):
   return res
 
 
+############################## ###############################
+
+
+def parseGroups(statement):
+  pass
+
+
+def parseHaving(statement):
+  pass
+
+
+def parseOrdered(statement):
+  pass
+
+
 def parse(statement):
   '''
   '''
@@ -128,15 +155,61 @@ def parse(statement):
 
   action = None
   conditions = None
+  groups = None
+  ordered = None
+  joins = None
+  having = None
+  froms = None
+
+  if "ordered by" in statement:
+    action, ordered = statement.split("ordered by")
+  else:
+    action = statement
+
+  if "having" in statement:
+    action, having = statement.split("having")
+  else:
+    action = statement
+
+  if "group by" in statement:
+    action, groups = statement.split("group by")
+  else:
+    action = statement
+
   if "where" in statement:
     action, conditions = statement.split("where")
   else:
     action = statement
 
+  if "join" in statement:
+    action, joins = statement.split("group by")
+  else:
+    action = statement
+
+  if "from" in statement:
+    action, froms = statement.split("from")
+  else:
+    action = statement
+
   res = parseAction(action)
+
+  if froms:
+    res['froms'] = parseFroms(froms)
+
+  if joins:
+    res['join'] = parseJoins(joins)
 
   if conditions:
     res['conditions'] = parseCondition(conditions)
+
+  if groups:
+    res['groups'] = parseGroups(groups)
+
+  if having:
+    res['having'] = parseHaving(having)
+
+  if ordered:
+    res['ordered'] = parseOrdered(ordered)
 
   return res
 
