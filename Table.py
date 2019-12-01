@@ -2,10 +2,11 @@ from Attribute import *
 
 class Table:
 
-    def __init__(self, attrs=None):
+    def __init__(self, name: str, attrs=None):
         '''
         attrs: dict {attrname: attr}
         '''
+        self.name = name
         self.attributes = {}
         self.rowsize = 0
         if attrs!=None:
@@ -101,10 +102,55 @@ class Table:
 
 
 
-    def select(self, attributes: list, conditions: dict, reverse = False):
+    # 暂不实现
+    def project(self, attributes: list, table: Table):
+        pass
+
+    def select(self, attributes: list, conditions: list, reverse = False):
         '''
-        return new table containing satisfied rows and their attributes
+        return a index list containing satisfied rows and their attributes
         '''
+        res = []
+
+        for i in range(self.rowsize):
+            orFlag = False
+
+            for orConds in conditions:
+                andFlag = True
+
+                for andconds in orConds:
+                    key, func = andconds
+                    s = key.split(".")
+                    if len(s) == 1:
+                        attrname = s[0]
+                    elif len(s) == 2:
+                        tablename = s[0]
+                        if tablename != self.name:
+                            continue
+                        attrname = s[1]
+                    else:
+                        raise Exception("Wrong conditions")
+                    
+                    b = func(self.attributes[attrname][i])
+                    if not b:
+                        andFlag = False
+                        break
+
+                if andFlag:
+                    orFlag = True
+                    break
+
+            if orFlag:
+                res.append[i]
+
+        if reverse:
+            res = res[::-1]
+
+        table = Table('temp')
+        for attribute in attributes:
+            table.addAttribute(self.attributes[attribute].getAttributeByIndex(res))
+
+        return table
 
     def delete(self, conditions):
         pass

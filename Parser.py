@@ -114,7 +114,6 @@ def __parseSingleCondition(statement):
   return res
     
 
-
 def parseCondition(statement):
   '''
   input: a string after "where"
