@@ -182,7 +182,7 @@ def parse(statement):
     action = statement
 
   if "join" in statement:
-    split = statement.split("group by")
+    split = statement.split("join")
     assert len(split)>=2, "wrong format of join statement"
     action = split[0]
     for i in range(1, len(split)):
