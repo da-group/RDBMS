@@ -62,7 +62,6 @@ def __parseSingleCondition(statement):
     if targets[i].endswith(","):
       targets[i] = targets[i][:-1]
 
-  res = {}
   c = None
   if symbol=='in':
     target = []
@@ -99,7 +98,7 @@ def __parseSingleCondition(statement):
     target = float(target)
     c = condition(symbol, target, ifNot)
 
-  res[field] = c
+  res = (field, c)
   return res
     
 
@@ -107,8 +106,8 @@ def __parseSingleCondition(statement):
 def parseCondition(statement):
   '''
   input: a string after "where"
-  output: return a 2-layer lists: or list, and list whose elements are condition dict
-  condition dict: key is table.attribute, value is function
+  output: return a 3-layer lists: or list, and list whose elements are condition tuple
+  condition tuple: (table.attribute, condition function)
   We assume that this statement does not contain "()".
   '''
   res = []
@@ -143,7 +142,7 @@ def parse(statement):
 
 
 if __name__ == '__main__':
-  statement = "select c1 from t1 where not c1 inside (2.4, 4.5) and c2 in (\"true\", \"dfs\") or c3 >= 3.4"
+  statement = "select c1 from t1 where not c1 inside (2.4, 4.5) and c2 in ('true', 'dfs') or c3 >= 3.4"
   res = parseCondition(statement.split("where")[1])
-  print(res[0][0]['c1'](3))
-  print(res[0][1]['c2']("false"))
+  print(res[0][0][1](3))
+  print(res[0][1][1]("false"))
