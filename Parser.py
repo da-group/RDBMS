@@ -1,3 +1,6 @@
+import re
+from Condition import condition
+
 
 SYMBOL_DICT = {
   '=': "equal",
@@ -24,15 +27,81 @@ def parseAction(string):
   pass
 
 
+def __isNumber(num):
+  pattern = re.compile(r'^[-+]?[-0-9]\d*\.\d*|[-+]?\.?[0-9]\d*$')
+  result = pattern.match(num)
+  if result:
+    return True
+  else:
+    return False
+
+
+def __isString(s):
+  return s.startswith("\'") and s.endswith("\'") or s.startswith("\"") and s.endswith("\"")
+
+
 def __parseSingleCondition(statement):
+  if '(' in statement:
+    # there are only tow cases may contain parethesis: in and inside
+    # delete the parethesis
+    index = statement.find('(')
+    statement = statement[:index]+statement[index+1:len(statement)-2]
   tokens = standardize(statement.strip().split(" "))
   assert len(tokens)>=3, "wrong number of tokens in condition "+statement
 
   ifNot = False
   if tokens[0]=="not":
     ifNot = True
-  pass
+    tokens = tokens[1:]
 
+  field = tokens[0]
+  symbol = tokens[1]
+  targets = tokens[2:]
+
+  for i in range(len(targets)):
+    if targets[i].endswith(","):
+      targets[i] = targets[i][:-1]
+
+  res = {}
+  c = None
+  if symbol=='in':
+    target = []
+    for ele in targets:
+      if __isNumber(ele):
+        target.append(float(ele))
+      elif __isString(ele):
+        target.append(ele[1:len(ele)-1])
+    c = condition(symbol, target, ifNot)
+  elif symbol=='inside':
+    assert len(targets)==2, "wrong number of tokens in condition "+statement
+    assert __isNumber(targets[0]) and __isNumber(targets[1]), "wrong format of range "+statement
+    start = float(targets[0])
+    end = float(targets[1])
+    c = condition(symbol, (start, end), ifNot)
+  elif symbol=='=' or symbol=='!=':
+    assert len(targets)==1, "wrong number of tokens in condition "+statement
+    target = targets[0]
+    if __isNumber(target):
+      target = float(target)
+    elif __isString(target):
+      target = target[1:len(target)-1]
+    c = condition(symbol, target, ifNot)
+  elif symbol=="like":
+    assert len(targets)==1, "wrong number of tokens in condition "+statement
+    target = targets[0]
+    assert __isString(target), "wrong format of pattern "+statement
+    target = target[1:len(target)-1]
+    c = condition(symbol, target, ifNot)
+  else:
+    assert len(targets)==1, "wrong number of tokens in condition "+statement
+    target = targets[0]
+    assert __isNumber(target), "wrong format of number "+statement
+    target = float(target)
+    c = condition(symbol, target, ifNot)
+
+  res[field] = c
+  return res
+    
 
 
 def parseCondition(statement):
@@ -74,4 +143,7 @@ def parse(statement):
 
 
 if __name__ == '__main__':
-  statement = "select c1 from t1"
+  statement = "select c1 from t1 where not c1 inside (2.4, 4.5) and c2 in (\"true\", \"dfs\") or c3 >= 3.4"
+  res = parseCondition(statement.split("where")[1])
+  print(res[0][0]['c1'](3))
+  print(res[0][1]['c2']("false"))
