@@ -80,7 +80,8 @@ def likeOp(value,target,ifNot):
     if(re.fullmatch(regex,value)):
           if ifNot: return False
           return True
-    
+    if ifNot: return True
+    return False
     
     
     
