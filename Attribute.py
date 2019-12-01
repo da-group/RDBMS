@@ -38,7 +38,6 @@ class Attribute(object):
     assert index<len(self.__values) and index>=0, "out of list bounding"
     return self.__values[index]
 
-
   def addValue(self, v):
     '''
     should check value-type consistency.
@@ -97,7 +96,6 @@ class Attribute(object):
   def getAttributeByIndex(self, index):
     '''
     this method assumes index list does not contain duplicate elements
-                        and the index list is in an ascending order
                         and the elements are no larger than len(self.__value)
     index: list of integers
     '''

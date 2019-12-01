@@ -33,7 +33,7 @@ def parseFroms(statement):
   pass
 
 
-def parseJoins(statement):
+def parseJoins(joins):
   pass
 
 
@@ -157,7 +157,7 @@ def parse(statement):
   conditions = None
   groups = None
   ordered = None
-  joins = None
+  joins = []
   having = None
   froms = None
 
@@ -182,7 +182,11 @@ def parse(statement):
     action = statement
 
   if "join" in statement:
-    action, joins = statement.split("group by")
+    split = statement.split("group by")
+    assert len(split)>=2, "wrong format of join statement"
+    action = split[0]
+    for i in range(1, len(split)):
+      joins.append(split[i])
   else:
     action = statement
 
@@ -196,7 +200,7 @@ def parse(statement):
   if froms:
     res['froms'] = parseFroms(froms)
 
-  if joins:
+  if len(joins)>0:
     res['join'] = parseJoins(joins)
 
   if conditions:
