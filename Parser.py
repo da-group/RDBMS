@@ -146,17 +146,17 @@ def parseCondition(statement):
   We assume that this statement does not contain "()".
   '''
   res = []
-  cnfStrs = statement.split("or")
+  cnfStrs = statement.split(" or ")
   for cnfStr in cnfStrs:
     cnf = []
-    conditions = cnfStr.split("and")
+    conditions = cnfStr.split(" and ")
     for condition in conditions:
       cnf.append(__parseSingleCondition(condition))
     res.append(cnf)
   return res
 
-
 ############################## ###############################
+
 
 
 def parseGroups(statement):
@@ -169,11 +169,34 @@ def parseGroups(statement):
   return groups
 
 
-def parseHaving(statement):
+
+############################## parse having conditions ###############################
+def __parseSingleHaving(statement):
   '''
-  
+
   '''
   pass
+
+
+def parseHaving(statement):
+  '''
+  return result is similar to results from parseCondition's
+  except the condition is represented as 3-element tuple (statistic function name, column name, condition function)
+  '''
+  res = []
+  cnfStrs = statement.split(" or ")
+  for cnfStr in cnfStrs:
+    cnf = []
+    conditions = cnfStr.split(" and ")
+    for condition in conditions:
+      cnf.append(__parseSingleHaving(condition))
+    res.append(cnf)
+  return res
+
+
+############################## ###############################
+
+
 
 
 def parseOrdered(statement):
