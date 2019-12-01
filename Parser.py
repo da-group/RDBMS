@@ -30,11 +30,30 @@ def parseAction(string):
 
 
 def parseFroms(statement):
-  pass
+  '''
+  return a list of table names
+  '''
+  tables = standardize(statement.split(","))
+  for i in range(len(tables)):
+    tables[i] = tables[i].strip()
+  return tables
+
 
 
 def parseJoins(joins):
-  pass
+  '''
+  return a list of list
+  list: (table1.column1, table2.column2)
+  '''
+  res = []
+  for join in joins:
+    _, columns = join.split(" on ")
+    l = standardize(columns.split("="))
+    for i in range(len(l)):
+      l[i] = l[i].strip()
+    assert len(l)==2, "wrong format of joins "+join
+    res.append(l)
+  return res
 
 
 
@@ -52,28 +71,7 @@ def __isString(s):
   return s.startswith("\'") and s.endswith("\'") or s.startswith("\"") and s.endswith("\"")
 
 
-def __parseSingleCondition(statement):
-  if '(' in statement:
-    # there are only tow cases may contain parethesis: in and inside
-    # delete the parethesis
-    index = statement.find('(')
-    statement = statement[:index]+statement[index+1:len(statement)-2]
-  tokens = standardize(statement.strip().split(" "))
-  assert len(tokens)>=3, "wrong number of tokens in condition "+statement
-
-  ifNot = False
-  if tokens[0]=="not":
-    ifNot = True
-    tokens = tokens[1:]
-
-  field = tokens[0]
-  symbol = tokens[1]
-  targets = tokens[2:]
-
-  for i in range(len(targets)):
-    if targets[i].endswith(","):
-      targets[i] = targets[i][:-1]
-
+def __parseConditionTuple(symbol, targets, ifNot):
   c = None
   if symbol=='in':
     target = []
@@ -109,6 +107,32 @@ def __parseSingleCondition(statement):
     assert __isNumber(target), "wrong format of number "+statement
     target = float(target)
     c = condition(symbol, target, ifNot)
+  return c
+
+
+def __parseSingleCondition(statement):
+  if '(' in statement:
+    # there are only tow cases may contain parethesis: in and inside
+    # delete the parethesis
+    index = statement.find('(')
+    statement = statement[:index]+statement[index+1:len(statement)-2]
+  tokens = standardize(statement.strip().split(" "))
+  assert len(tokens)>=3, "wrong number of tokens in condition "+statement
+
+  ifNot = False
+  if tokens[0]=="not":
+    ifNot = True
+    tokens = tokens[1:]
+
+  field = tokens[0]
+  symbol = tokens[1]
+  targets = tokens[2:]
+
+  for i in range(len(targets)):
+    if targets[i].endswith(","):
+      targets[i] = targets[i][:-1]
+
+  c = __parseConditionTuple(symbol, targets, ifNot)
 
   res = (field, c)
   return res
@@ -136,15 +160,40 @@ def parseCondition(statement):
 
 
 def parseGroups(statement):
-  pass
+  '''
+  return a list of column names
+  '''
+  groups = standardize(statement.split(","))
+  for i in range(len(groups)):
+    groups[i] = groups[i].strip()
+  return groups
 
 
 def parseHaving(statement):
+  '''
+  
+  '''
   pass
 
 
 def parseOrdered(statement):
-  pass
+  '''
+  return a list of tuples.
+  tuple: (column name, isAscending)
+  '''
+  statements = statement.split(",")
+  res = []
+  for s in statements:
+    s = s.strip()
+    l = standardize(s.split(" "))
+    assert len(l)==1 or len(l)==2, "wrong format of order "+statement
+    if len(l)==2:
+      assert l[1] in ['asc', 'desc'], "wrong format of order "+statement
+    isAsc = True
+    if l[1]=="desc":
+      isAsc = False
+    res.append((l[0], isAsc))
+  return res
 
 
 def parse(statement):
@@ -222,3 +271,15 @@ if __name__ == '__main__':
   res = parseCondition(statement.split("where")[1])
   print(res[0][0][1](3))
   print(res[0][1][1]("false"))
+
+  statement = "t1, t2, t3"
+  print(parseFroms(statement))
+
+  statement = "t1, t2 on t1.c2 = t2.c4"
+  print(parseJoins([statement]))
+
+  statement = "c1, c2,c3"
+  print(parseGroups(statement))
+
+  statement = "t1.c2 asc, t2.c3 desc"
+  print(parseOrdered(statement))

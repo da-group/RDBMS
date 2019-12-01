@@ -1,7 +1,7 @@
 
 import re
 
-def condition(func, target,ifNot=False):
+def condition(func, target, ifNot=False):
     functions = {'greater': greaterOp,
                  'smaller':smallerOp,
                  'equal':equalOp,
@@ -13,7 +13,7 @@ def condition(func, target,ifNot=False):
                  'like':likeOp}
     def wrapper(value):
         # nothing but find the function
-        return functions[func](value, target)
+        return functions[func](value, target, ifNot)
     return wrapper
 
 
