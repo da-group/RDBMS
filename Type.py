@@ -1,16 +1,16 @@
 from enum import Enum
-from datetime import date
+from datetime import datetime
 
 
 TypeDict = {
     'int': int,
     'float': float,
     'varchar': str,
-    'data': date,
+    'data': datetime,
     'INT': int,
     'FLOAT': float,
     'VARCHAR': str, 
-    'DATE': date
+    'DATE': datetime
 }
 
 

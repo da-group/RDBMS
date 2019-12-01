@@ -1,4 +1,5 @@
 import re
+from datetime import datetime
 from Condition import condition
 
 
@@ -18,7 +19,7 @@ SYMBOL_DICT = {
 def standardize(strings):
   res = []
   for string in strings:
-    if string!="":
+    if string!="" and string!=",":
       res.append(string)
   return res
 
@@ -66,9 +67,19 @@ def __isNumber(num):
   else:
     return False
 
-
 def __isString(s):
   return s.startswith("\'") and s.endswith("\'") or s.startswith("\"") and s.endswith("\"")
+
+def __isDate(s):
+  date = s.split("/")
+  if len(date)==3 and len(date[0])==2 and len(date[1])==2 and len(date[2])==4 \
+    and date[0].isdigit() and date[1].isdigit() and date[2].isdigit() \
+    and int(date[0])>=1 and int(date[0])<=12 and int(date[1])>=1 and int(date[1])<=31:
+    return True
+  return False
+
+def __convertToDate(s):
+  return datetime.strptime(s, "%m/%d/%Y")
 
 
 def __parseConditionTuple(symbol, targets, ifNot):
@@ -78,20 +89,28 @@ def __parseConditionTuple(symbol, targets, ifNot):
     for ele in targets:
       if __isNumber(ele):
         target.append(float(ele))
+      elif __isDate(ele):
+        target.append(__convertToDate(ele))
       elif __isString(ele):
         target.append(ele[1:len(ele)-1])
     c = condition(symbol, target, ifNot)
   elif symbol=='inside':
     assert len(targets)==2, "wrong number of tokens in condition "+statement
-    assert __isNumber(targets[0]) and __isNumber(targets[1]), "wrong format of range "+statement
-    start = float(targets[0])
-    end = float(targets[1])
+    if __isDate(targets[0]) and __isDate(targets[1]):
+      start = __convertToDate(targets[0])
+      end = __convertToDate(targets[1])
+    else:
+      assert __isNumber(targets[0]) and __isNumber(targets[1]), "wrong format of range "+statement
+      start = float(targets[0])
+      end = float(targets[1])
     c = condition(symbol, (start, end), ifNot)
   elif symbol=='=' or symbol=='!=':
     assert len(targets)==1, "wrong number of tokens in condition "+statement
     target = targets[0]
     if __isNumber(target):
       target = float(target)
+    elif __isDate(target):
+      target = __convertToDate(target)
     elif __isString(target):
       target = target[1:len(target)-1]
     c = condition(symbol, target, ifNot)
@@ -104,18 +123,22 @@ def __parseConditionTuple(symbol, targets, ifNot):
   else:
     assert len(targets)==1, "wrong number of tokens in condition "+statement
     target = targets[0]
-    assert __isNumber(target), "wrong format of number "+statement
-    target = float(target)
+    assert __isNumber(target) or __isDate(target), "wrong format of number "+statement
+    if __isNumber(target):
+      target = float(target)
+    elif __isDate(target):
+      target = __convertToDate(target)
     c = condition(symbol, target, ifNot)
   return c
 
 
 def __parseSingleCondition(statement):
+  statement = statement.strip()
   if '(' in statement:
     # there are only tow cases may contain parethesis: in and inside
     # delete the parethesis
     index = statement.find('(')
-    statement = statement[:index]+statement[index+1:len(statement)-2]
+    statement = statement[:index]+statement[index+1:len(statement)-1]
   tokens = standardize(statement.strip().split(" "))
   assert len(tokens)>=3, "wrong number of tokens in condition "+statement
 
@@ -232,28 +255,28 @@ def parse(statement):
   having = None
   froms = None
 
-  if "ordered by" in statement:
-    action, ordered = statement.split("ordered by")
+  if " ordered by " in statement:
+    action, ordered = statement.split(" ordered by ")
   else:
     action = statement
 
-  if "having" in statement:
-    action, having = statement.split("having")
+  if " having " in statement:
+    action, having = statement.split(" having ")
   else:
     action = statement
 
-  if "group by" in statement:
-    action, groups = statement.split("group by")
+  if " group by " in statement:
+    action, groups = statement.split(" group by ")
   else:
     action = statement
 
-  if "where" in statement:
-    action, conditions = statement.split("where")
+  if " where " in statement:
+    action, conditions = statement.split(" where ")
   else:
     action = statement
 
-  if "join" in statement:
-    split = statement.split("join")
+  if " join " in statement:
+    split = statement.split(" join ")
     assert len(split)>=2, "wrong format of join statement"
     action = split[0]
     for i in range(1, len(split)):
@@ -261,8 +284,8 @@ def parse(statement):
   else:
     action = statement
 
-  if "from" in statement:
-    action, froms = statement.split("from")
+  if " from " in statement:
+    action, froms = statement.split(" from ")
   else:
     action = statement
 
@@ -290,10 +313,11 @@ def parse(statement):
 
 
 if __name__ == '__main__':
-  statement = "select c1 from t1 where not c1 inside (2.4, 4.5) and c2 in ('true', 'dfs') or c3 >= 3.4"
+  statement = "select c1 from t1 where not c1 inside (2.4, 4.5) and c2 in ('true', 'dfs') or c3 >= 3.4 and c4 inside (03/04/2018, 04/05/2019)"
   res = parseCondition(statement.split("where")[1])
   print(res[0][0][1](3))
   print(res[0][1][1]("false"))
+  print(res[1][1][1](datetime.strptime("07/20/2018", "%m/%d/%Y")))
 
   statement = "t1, t2, t3"
   print(parseFroms(statement))
