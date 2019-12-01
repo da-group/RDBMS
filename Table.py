@@ -108,7 +108,8 @@ class Table:
 
     def select(self, attributes: list, conditions: list, reverse = False):
         '''
-        return a index list containing satisfied rows and their attributes
+        attributes: * or list of attributes
+        return a table containing satisfied rows and their attributes
         '''
         res = []
 
@@ -147,16 +148,87 @@ class Table:
             res = res[::-1]
 
         table = Table('temp')
+        if attributes == '*':
+            attributes = self.attributes
         for attribute in attributes:
             table.addAttribute(self.attributes[attribute].getAttributeByIndex(res))
 
         return table
 
+
     def delete(self, conditions):
-        pass
+        res = []
+
+        for i in range(self.rowsize):
+            orFlag = False
+
+            for orConds in conditions:
+                andFlag = True
+
+                for andconds in orConds:
+                    key, func = andconds
+                    s = key.split(".")
+                    if len(s) == 1:
+                        attrname = s[0]
+                    elif len(s) == 2:
+                        tablename = s[0]
+                        if tablename != self.name:
+                            continue
+                        attrname = s[1]
+                    else:
+                        raise Exception("Wrong conditions")
+                    
+                    b = func(self.attributes[attrname][i])
+                    if not b:
+                        andFlag = False
+                        break
+
+                if andFlag:
+                    orFlag = True
+                    break
+
+            if orFlag:
+                res.append[i]
+
+        self.deleteTuple(res)
         
-    def update(self, conditions):
-        pass
+
+    def update(self, conditions, row):
+        res = []
+
+        for i in range(self.rowsize):
+            orFlag = False
+
+            for orConds in conditions:
+                andFlag = True
+
+                for andconds in orConds:
+                    key, func = andconds
+                    s = key.split(".")
+                    if len(s) == 1:
+                        attrname = s[0]
+                    elif len(s) == 2:
+                        tablename = s[0]
+                        if tablename != self.name:
+                            continue
+                        attrname = s[1]
+                    else:
+                        raise Exception("Wrong conditions")
+                    
+                    b = func(self.attributes[attrname][i])
+                    if not b:
+                        andFlag = False
+                        break
+
+                if andFlag:
+                    orFlag = True
+                    break
+
+            if orFlag:
+                res.append[i]
+        
+        for i in res:
+            self.updateTuple(i, row)
 
 
 if __name__ == "__main__":
