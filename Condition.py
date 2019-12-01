@@ -60,7 +60,7 @@ def insideOp(value, target, ifNot):
     return value>=start and value<=end
 
 def likeOp(value,target,ifNot):   
-    target = target.split("%")
+    target = target.strip('\'').split("%")
     
     for i in range(0,len(target)):
         temp = list(target[i])
