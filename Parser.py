@@ -93,7 +93,7 @@ def __parseConditionTuple(symbol, targets, ifNot):
         target.append(__convertToDate(ele))
       elif __isString(ele):
         target.append(ele[1:len(ele)-1])
-    c = condition(symbol, target, ifNot)
+    c = condition(SYMBOL_DICT[symbol], target, ifNot)
   elif symbol=='inside':
     assert len(targets)==2, "wrong number of tokens in condition "+statement
     if __isDate(targets[0]) and __isDate(targets[1]):
@@ -103,7 +103,7 @@ def __parseConditionTuple(symbol, targets, ifNot):
       assert __isNumber(targets[0]) and __isNumber(targets[1]), "wrong format of range "+statement
       start = float(targets[0])
       end = float(targets[1])
-    c = condition(symbol, (start, end), ifNot)
+    c = condition(SYMBOL_DICT[symbol], (start, end), ifNot)
   elif symbol=='=' or symbol=='!=':
     assert len(targets)==1, "wrong number of tokens in condition "+statement
     target = targets[0]
@@ -113,13 +113,13 @@ def __parseConditionTuple(symbol, targets, ifNot):
       target = __convertToDate(target)
     elif __isString(target):
       target = target[1:len(target)-1]
-    c = condition(symbol, target, ifNot)
+    c = condition(SYMBOL_DICT[symbol], target, ifNot)
   elif symbol=="like":
     assert len(targets)==1, "wrong number of tokens in condition "+statement
     target = targets[0]
     assert __isString(target), "wrong format of pattern "+statement
     target = target[1:len(target)-1]
-    c = condition(symbol, target, ifNot)
+    c = condition(SYMBOL_DICT[symbol], target, ifNot)
   else:
     assert len(targets)==1, "wrong number of tokens in condition "+statement
     target = targets[0]
@@ -128,7 +128,7 @@ def __parseConditionTuple(symbol, targets, ifNot):
       target = float(target)
     elif __isDate(target):
       target = __convertToDate(target)
-    c = condition(symbol, target, ifNot)
+    c = condition(SYMBOL_DICT[symbol], target, ifNot)
   return c
 
 
