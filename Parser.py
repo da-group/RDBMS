@@ -1,8 +1,11 @@
 import re
 from datetime import datetime
 from Condition import condition
-
+from Attribute import *
+from Table import *
+from Database import *
 from Statistic import *
+from Type import *
 
 
 SYMBOL_DICT = {
@@ -28,8 +31,128 @@ def standardize(strings):
 
 
 def parseAction(string):
-  pass
+    res = {}
+    string = string.strip(";")
+    #action = string.split(" ")
+    if("select" in string):
+        res["action_type"] = "select"
+        string = string.split("select")[1]
+        attrs = string.split(",")
+        for i in range(len(attrs)):
+            attrs[i] = attrs[i].strip()
+        if(len(attrs)==1 and attrs[0] == "*"):
+            attrs = "all"
+        res["attrs"] = attrs
+        
+        print(attrs)
+    elif("insert" in string):
+        res['action_type'] = "insert"
+        string = string.split("insert ")[1].split("into ")[1]
+        attr_val ={}
+        
+        temp = re.findall(r'\(.*?\)',string)
+        if(len(temp)>1): 
+            attrs = temp[0]
+            values = temp[1]
+            attrs = attrs.lstrip("(").rstrip(")").split(",")
+            values = values.lstrip("(").rstrip(")").split(",")
+            assert len(attrs) == len(values),"Wrong num of Values"
+            for i in range(len(attrs)):
+                attr_val[attrs[i].strip()] = values[i].strip().strip('\'')
+                
+        else:
+            values = temp[0]
+            values = values.lstrip("(").rstrip(")").split(",")
+        
+        res['attrs_values'] = attr_val
+        
+            
+        for i in range(len(values)):
+            values[i] = values[i].strip().strip('\'')
+        
 
+        #print(attrs)
+        print(values)
+        print("insert")
+        
+    elif("delete" in string):
+        res["action_type"] = "delete"
+#        tablename = string.split("delete from ")[1].strip()
+#        res["tablename"] = tablename
+#        print(tablename)
+#        print("delete")
+    elif("update" in string):
+        res["action_type"] = "update"
+        string = string.split("update ")[1].split("set ")
+        tablename =string[0].strip()
+        assignments = string[1].split(",")
+        assignment_dist = {}
+        for a in assignments:
+            attr = a.split("=")[0].strip()
+            value = a.split("=")[1].strip().strip('\'')
+            assignment_dist[attr] = value
+        res["tablename"] = tablename
+        res["assignments"] = assignment_dist
+#        print(tablename)
+#        print(assignments)
+#        print(assignment_dist)
+#        
+#        print("update" )
+    elif("create table" in string):
+        res["action_type"] = "create"
+        string = string.split("create table ")[1]
+        temp =re.findall(r'\(.*\)',string)[0]
+        tablename = string.replace(temp,'').strip()
+        ak = temp.lstrip("(").rstrip(")").split(",")
+        primary =  ak[len(ak)-1].split("primary key")[1].lstrip("(").rstrip(")").strip()
+        attr_list = []
+        
+        for a in ak:
+            if("primary key" not in a):
+                a= a.strip().split(" ")
+                a_name = a[0]
+                a_type = a[1]
+                a_key = "NULL"
+                if a_name == primary: a_key = AttrKeys.PRIMARY
+                if(len(a)>2):
+                    if a[2] =="not": a_key = AttrKeys.NOT_NULL   
+                attr = Attribute(name=a_name, type=AttrTypes[a_type.upper()], key=a_key)
+                attr_list.append(attr)
+        res["tablename"] = tablename
+        res["attrs"] = attr_list
+        print("create table")
+    elif("drop table" in string):
+        res["action_type"] = "drop"
+        tablename = string.split("drop table ")[1].strip()
+        res['tablename'] = tablename
+        print(tablename)
+        print("drop table")
+    elif("alter table" in string):
+        string = string.split("alter table ")[1].strip().split(" ")
+        tablename = string[0].strip()
+        res['tablename'] = tablename
+        attr_name = string[2].strip()
+        if "add" in string and len(string)==4:
+            res["action_type"] = "alter add"
+            attr_type = string[3].strip()
+            attr = Attribute(name=attr_name, type=AttrTypes[attr_type.upper()])
+            res["attr"] = attr
+            print("add")
+        elif "drop" in string and len(string)==3:
+            res["action_type"] = "alter drop"
+            res['attr'] = attr_name
+#            print("drop")
+#        print(attr)
+#        print(tablename)
+        print("alter table")
+    elif("create index" in string):
+        print("create index")
+    elif("drop index" in string):
+        print("drop index")
+    else: print("CANNOT PARSE ACTIONS")
+    
+    
+    return res
 
 
 def parseFroms(statement):
@@ -51,11 +174,10 @@ def parseJoins(joins):
   res = []
   for join in joins:
     _, columns = join.split(" on ")
-    l = standardize(columns.split(" "))
+    l = standardize(columns.split("="))
     for i in range(len(l)):
       l[i] = l[i].strip()
-    l[1] = SYMBOL_DICT[l[1]]
-    assert len(l)==3, "wrong format of joins "+join
+    assert len(l)==2, "wrong format of joins "+join
     res.append(l)
   return res
 
@@ -251,6 +373,7 @@ def parseHaving(statement):
 
 
 
+
 def parseOrdered(statement):
   '''
   return a list of tuples.
@@ -285,40 +408,41 @@ def parse(statement):
   froms = None
 
   if " ordered by " in statement:
-    action, ordered = statement.split(" ordered by ")
+    statement, ordered = statement.split(" ordered by ")
   else:
-    action = statement
+    statement = statement
 
   if " having " in statement:
-    action, having = statement.split(" having ")
+    statement, having = statement.split(" having ")
   else:
-    action = statement
+    statement = statement
 
   if " group by " in statement:
-    action, groups = statement.split(" group by ")
+    statement, groups = statement.split(" group by ")
   else:
-    action = statement
+    statement = statement
 
   if " where " in statement:
-    action, conditions = statement.split(" where ")
+    statement, conditions = statement.split(" where ")
+    print(conditions)
   else:
-    action = statement
+    statement = statement
 
   if " join " in statement:
     split = statement.split(" join ")
     assert len(split)>=2, "wrong format of join statement"
-    action = split[0]
+    statement = split[0]
     for i in range(1, len(split)):
       joins.append(split[i])
   else:
-    action = statement
+    statement = statement
 
   if " from " in statement:
     action, froms = statement.split(" from ")
   else:
     action = statement
 
-  res = parseAction(action)
+  res = parseAction(action) 
 
   if froms:
     res['froms'] = parseFroms(froms)
@@ -342,24 +466,38 @@ def parse(statement):
 
 
 if __name__ == '__main__':
-  statement = "select c1 from t1 where not c1 inside (2.4, 4.5) and c2 in ('true', 'dfs') or c3 >= 3.4 and \
-              c4 inside (03/04/2018, 04/05/2019)"
-  res = parseCondition(statement.split("where")[1])
-  print(res[0][0][1](3))
-  print(res[0][1][1]("false"))
-  print(res[1][1][1](datetime.strptime("07/20/2018", "%m/%d/%Y")))
-
-  statement = "t1, t2, t3"
-  print(parseFroms(statement))
-
-  statement = "t1, t2 on t1.c2 = t2.c4"
-  print(parseJoins([statement]))
-
-  statement = "c1, c2,c3"
-  print(parseGroups(statement))
-
-  statement = "t1.c2 asc, t2.c3 desc"
-  print(parseOrdered(statement))
-
-  statement = "sum(t1.c2) >= 2 and max(t2.c3) inside (2.3, 4.3)"
-  print(parseHaving(statement))
+  statement = "select c1 from t1 where not c1 inside (2.4, 4.5) and c2 in ('true', 'dfs') or c3 >= 3.4 and c4 inside (03/04/2018, 04/05/2019)"
+  
+  create = "CREATE TABLE Students(ROLL_NO int,NAME varchar NOT NULL,SUBJECT varchar, primary key(roll_No));"
+  alter_1 = "ALTER TABLE students ADD gender varchar"
+  alter_2 = "alter table students drop gender"
+  drop = "drop table students"
+  insert = "INSERT INTO Websites (name, url, country) VALUES ('stackoverflow'  , 'http://stackoverflow.com/', 'IND');"
+  select_1 = "SELECT class_id, AVG(score)"
+  select_2 = "select *"
+  update = "UPDATE Person SET FirstName = 'Fred',LastName = 'Andromeda'"
+  delete = "DELETE FROM Customers"
+  parse = parse(delete)  
+  print(parse)
+  
+  
+  
+#  res = parseCondition(statement.split("where")[1])
+#  print(res[0][0][1](3))
+#  print(res[0][1][1]("false"))
+#  print(res[1][1][1](datetime.strptime("07/20/2018", "%m/%d/%Y")))
+#
+#  statement = "t1, t2, t3"
+#  print(parseFroms(statement))
+#
+#  statement = "t1, t2 on t1.c2 = t2.c4"
+#  print(parseJoins([statement]))
+#
+#  statement = "c1, c2,c3"
+#  print(parseGroups(statement))
+#
+#  statement = "t1.c2 asc, t2.c3 desc"
+#  print(parseOrdered(statement))
+#
+#  statement = "sum(t1.c2) >= 2 and max(t2.c3) inside (2.3, 4.3)"
+#  print(parseHaving(statement))
