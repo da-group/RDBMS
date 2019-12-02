@@ -1,6 +1,7 @@
 import os
 from Type import *
 from Condition import condition
+from BPlusTree import BPlusTree
 
 
 class Attribute(object):
@@ -37,6 +38,14 @@ class Attribute(object):
   def __getitem__(self, index):
     assert index<len(self.__values) and index>=0, "out of list bounding"
     return self.__values[index]
+
+
+  
+  def buildIndex(self):
+    self.btree = BPlusTree()
+    for value, key in enumerate(self.__values):
+      self.insert(key, value)
+
 
   def addValue(self, v):
     '''
