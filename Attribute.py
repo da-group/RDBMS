@@ -17,6 +17,7 @@ class Attribute(object):
     self.type = args['type']
     self.key = args.get('key', [AttrKeys.NULL])
     self.__values = []
+    self.btree = None
 
     #  key is also not null
     if not isinstance(self.key, list):
@@ -41,10 +42,15 @@ class Attribute(object):
 
 
   
-  def buildIndex(self):
-    self.btree = BPlusTree()
+  def buildIndex(self, order):
+    self.btree = BPlusTree(order)
     for value, key in enumerate(self.__values):
       self.insert(key, value)
+
+
+  def getIndexWithBPlusTree(self, target):
+    assert self.btree, "btree does not exist"
+    return self.btree.search(target)
 
 
   def addValue(self, v):
