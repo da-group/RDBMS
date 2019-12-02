@@ -13,6 +13,8 @@ class Node(object):
     self.keys = []
     self.values = []
     self.isLeaf = True
+    self.next = None
+    self.prev = None
 
 
   def __str__(self):
@@ -69,7 +71,15 @@ class Node(object):
   def split(self):
     left = Node(self.order)
     right = Node(self.order)
-    mid = int(self.order/2)+1
+    left.next = right
+    left.prev = self.prev
+    if self.prev:
+      self.prev.next = left
+    right.prev = left
+    right.next = self.next
+    if self.next:
+      self.next.prev = right
+    mid = int(self.order/2)
 
     left.keys = self.keys[:mid]
     left.values = self.values[:mid]
@@ -109,12 +119,30 @@ class BPlusTree(object):
 
 
   def search(self, key):
+    '''
+    key: either int or tuple
+    tuple: (start, end)
+    '''
+    assert isinstance(key, int) or isinstance(key, tuple), "wrong query tuple "+str(key)
     # find the leaf node
-    node = self.__searchNode(node, key)
-    for i in range(node.size()):
-      if key==node[i]:
-        return node.values[i]
-    return None
+    if isinstance(key, int):
+      node = self.__searchNode(self.root, key)
+      for i in range(node.size()):
+        if key==node[i]:
+          return node.values[i]
+      return None
+    else:
+      start, end = key
+      node = self.__searchNode(self.root, start)
+      res = []
+      while node:
+        for i in range(node.size()):
+          if node[i]>=start and node[i]<=end:
+            res += node.values[i]
+          elif node[i]>end:
+            return res
+        node = node.next
+      return res
 
 
   def insert(self, key, value):
@@ -161,12 +189,16 @@ class BPlusTree(object):
 
 
 if __name__ == '__main__':
-  t = BPlusTree(3)
-  t.insert(1, 2)
-  t.insert(3, 4)
-  t.insert(0, 3)
-  t.insert(4, 3)
-  t.insert(6, 3)
-  t.insert(7, 3)
-  t.delete(7, 3)
+  t = BPlusTree(4)
+  t.insert(1, 1)
+  t.insert(3, 3)
+  t.insert(0, 0)
+  t.insert(4, 4)
+  t.insert(6, 6)
+  t.insert(8, 7)
+  t.insert(9, 7)
+  t.insert(10, 7)
+  t.insert(11, 7)
+  # t.delete(7, 3)
   print(t)
+  print(t.search((3, 10)))
