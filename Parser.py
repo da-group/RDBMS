@@ -2,6 +2,8 @@ import re
 from datetime import datetime
 from Condition import condition
 
+from Statistic import *
+
 
 SYMBOL_DICT = {
   '=': "equal",
@@ -196,15 +198,42 @@ def parseGroups(statement):
 ############################## parse having conditions ###############################
 def __parseSingleHaving(statement):
   '''
-
+  return tuple: (column name, statistic function, condition function)
   '''
-  pass
+  l = standardize(statement.split(' '))
+  assert len(l)>=3, "wrong format of having statement"
+  for i in range(len(l)):
+    if l[i].startswith("("):
+      l[i] = l[i][1:len(l[i])]
+    if l[i].endswith(")"):
+      l[i] = l[i][:-1]
+    if l[i].endswith(","):
+      l[i] = l[i][:-1]
+  
+  ifNot = False
+  if l[0]=="not":
+    ifNot = True
+    l = l[1:]
+  
+  stat = l[0]
+  symbol = l[1]
+  targets = l[2:]
+
+  tmp = stat.split("(")
+  assert len(tmp)==2, "wrong format of having statement"
+  statFunc = FuncMap[tmp[0].strip()]
+  field = tmp[1].strip()[:-1]
+
+  c = __parseConditionTuple(symbol, targets, ifNot)
+  res = (field, statFunc, c)
+  return res
+
 
 
 def parseHaving(statement):
   '''
   return result is similar to results from parseCondition's
-  except the condition is represented as 3-element tuple (statistic function name, column name, condition function)
+  except the condition is represented as 3-element tuple (column name, statistic function, condition function)
   '''
   res = []
   cnfStrs = statement.split(" or ")
@@ -330,3 +359,6 @@ if __name__ == '__main__':
 
   statement = "t1.c2 asc, t2.c3 desc"
   print(parseOrdered(statement))
+
+  statement = "sum(t1.c2) >= 2 and max(t2.c3) inside (2.3, 4.3)"
+  print(parseHaving(statement))
