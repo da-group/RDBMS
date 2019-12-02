@@ -1,4 +1,6 @@
 from Attribute import *
+from Parser import *
+import copy
 
 class Table:
 
@@ -169,7 +171,7 @@ class Table:
         if reverse:
             res = res[::-1]
 
-        table = Table('temp')
+        table = Table('select_result')
         if attrnames == '*':
             attrnames = self.attributes.keys()
         for attrname in attrnames:
@@ -252,30 +254,120 @@ class Table:
         for i in res:
             self.updateTuple(i, row)
 
-    # TODO
-    def groupBy(self, attributes):
-        pass
+
+    def groupBy(self, attrnames):
+        '''
+        attrnames: list of attribute names []
+        return list of tables
+        # '''
+        for attrname in attrnames:
+            assert attrname in self.attributes.keys(), "Wrong attribute names"
+        res = []
+        res = self.groupByRecursion(attrnames, [self], 0)
+        return res
+
+    def groupByRecursion(self, attrnames, tables, layer):
+        '''
+        attrnames: list of attribute names []
+        tables: list of tables
+        '''
+        if not attrnames:
+            return tables
+        else:
+            attrname = attrnames.pop(0)
+            res = []
+            for t in tables:
+                res.extend(t.groupBySingleAttribute(attrname))
+                res = self.groupByRecursion(copy.deepcopy(attrnames), res, layer+1)
+            return res
+
+    def groupBySingleAttribute(self, attrname):
+        '''
+        attrname: str
+        return list of tables
+        '''
+        assert attrname in self.attributes.keys(), "Wrong attribute names"
+
+        attrsForTable = []
+        for a in self.attributes:
+            attrsForTable.append(self.attributes[a].copyEmptyAttr())
+
+        res = {}    # {value, table}
+        for i in range(self.rowsize):
+            emptyAttrs = copy.deepcopy(attrsForTable)
+            _a, _t, tup = self.getTuple(i)
+            # 如果遇到新的value, 创建一个新表
+            if tup[attrname] not in res.keys():
+                table = Table("temp",emptyAttrs)
+                table.addTuple(tup)
+                res[tup[attrname]] = table
+            # 如果value已经存在，则直接加入相对应的表
+            else:
+                table = res[tup[attrname]]
+                table.addTuple(tup)
+        return [ v for v in res.values() ]
+
+
+
+
+
+
+
 
 
 if __name__ == "__main__":
+
+    #===============================test1===========================================
+    # a1 = Attribute(name="a1", type=AttrTypes.INT, key=[AttrKeys.PRIMARY])
+    # a1.addValue(1)
+    # a2 = Attribute(name="a2", type=AttrTypes.VARCHAR, key=[AttrKeys.NOT_NULL])
+    # a2.addValue('hello')
+    # a3 = Attribute(name="a3", type=AttrTypes.FLOAT, key=[AttrKeys.NULL])
+
+    # t1 = Table('t1', [a1, a2, a3])
+    # print(t1)
+    # t1.addTuple({'a1':2,'a2':'world', 'a3':0.5})
+    # print(t1)
+    # t1.updateTuple(1,{'a1':5,'a2':'foooo', 'a3':2.5})
+    # print(t1)
+    # # t1.deleteTuple(0)
+    # # print(t1)
+    # # t2 = t1.select(["a1"], [[['a1',condition('inside', (1, 2), True)]]])
+    # t2 = t1.select("*", [[['a1',condition('inside', (1, 2))]]])
+    # print(t2)
+    # # t1.delete([[['a1',condition('inside', (1, 2))]]])
+    # # print(t1)
+    # t1.update([[['a1',condition('inside', (1, 2))]]], {'a1':100,'a2':'hhhhh', 'a3':3.14})
+    # print(t1)
+
+
+    #===============================test2=join======================================
     a1 = Attribute(name="a1", type=AttrTypes.INT, key=[AttrKeys.PRIMARY])
     a1.addValue(1)
-    a2 = Attribute(name="a2", type=AttrTypes.VARCHAR, key=[AttrKeys.NOT_NULL])
-    a2.addValue('hello')
-    a3 = Attribute(name="a3", type=AttrTypes.FLOAT, key=[AttrKeys.NULL])
-
+    a1.addValue(1)
+    a1.addValue(1)
+    a1.addValue(1)
+    a1.addValue(2)
+    a1.addValue(2)
+    a2 = Attribute(name="a2", type=AttrTypes.INT, key=[AttrKeys.NOT_NULL])
+    a2.addValue(2)
+    a2.addValue(2)
+    a2.addValue(3)
+    a2.addValue(3)
+    a2.addValue(2)
+    a2.addValue(2)
+    a3 = Attribute(name="a3", type=AttrTypes.INT, key=[AttrKeys.NULL])
+    a3.addValue(3)
+    a3.addValue(9)
+    a3.addValue(3)
+    a3.addValue(9)
+    a3.addValue(3)
+    a3.addValue(9)
     t1 = Table('t1', [a1, a2, a3])
-    print(t1)
-    t1.addTuple({'a1':2,'a2':'world', 'a3':0.5})
-    print(t1)
-    t1.updateTuple(1,{'a1':5,'a2':'foooo', 'a3':2.5})
-    print(t1)
-    # t1.deleteTuple(0)
-    # print(t1)
-    # t2 = t1.select(["a1"], [[['a1',condition('inside', (1, 2), True)]]])
-    t2 = t1.select("*", [[['a1',condition('inside', (1, 2))]]])
-    print(t2)
-    # t1.delete([[['a1',condition('inside', (1, 2))]]])
-    # print(t1)
-    t1.update([[['a1',condition('inside', (1, 2))]]], {'a1':100,'a2':'hhhhh', 'a3':3.14})
-    print(t1)
+    statement = "a1,a3"
+    p = parseGroups(statement)
+    groupByResult = t1.groupBy(p)
+    for t in groupByResult:
+        print(t)
+        
+
