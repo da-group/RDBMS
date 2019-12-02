@@ -50,12 +50,14 @@ def parseAction(string):
         string = string.split("insert ")[1].split("into ")[1]
         tablename = string.split(' ')[0].strip()
         res['tablename'] = tablename
+        #print(string)
         
         
         
         attr_val ={}
         
         temp = re.findall(r'\(.*?\)',string)
+        #print(temp)
         if(len(temp)>1): 
             attrs = temp[0]
             values = temp[1]
@@ -63,7 +65,7 @@ def parseAction(string):
             values = values.lstrip("(").rstrip(")").split(",")
             assert len(attrs) == len(values),"Wrong num of Values"
             for i in range(len(attrs)):
-                attr_val[attrs[i].strip()] = values[i].strip().strip('\'')
+                attr_val[attrs[i].strip()] = values[i].strip()
                 
         else:
             values = temp[0]
@@ -73,7 +75,7 @@ def parseAction(string):
         
             
         for i in range(len(values)):
-            values[i] = values[i].strip().strip('\'')
+            values[i] = values[i].strip()
         
 
         #print(attrs)
@@ -151,9 +153,9 @@ def parseAction(string):
 #        print(tablename)
 #        print("alter table")
     elif("create index" in string):
-#        print("create index")
+        print("create index")
     elif("drop index" in string):
-#        print("drop index")
+        print("drop index")
     else: print("CANNOT PARSE ACTIONS")
     
     
@@ -477,7 +479,7 @@ if __name__ == '__main__':
   alter_1 = "ALTER TABLE students ADD gender varchar"
   alter_2 = "alter table students drop gender"
   drop = "drop table students"
-  insert = "INSERT INTO Websites (name, url, country) VALUES ('stackoverflow'  , 'http://stackoverflow.com/', 'IND');"
+  insert = "INSERT INTO students (roll_no,name,subject) VALUES (1, 'Seiun Seiya', 'Computer Science');"
   select_1 = "SELECT class_id, AVG(score)"
   select_2 = "select *"
   update = "UPDATE Person SET FirstName = 'Fred',LastName = 'Andromeda'"
