@@ -222,7 +222,7 @@ def __parseSingleHaving(statement):
   tmp = stat.split("(")
   assert len(tmp)==2, "wrong format of having statement"
   statFunc = FuncMap[tmp[0].strip()]
-  field = tmp[1].strip()[:-1]
+  field = tmp[1].strip()
 
   c = __parseConditionTuple(symbol, targets, ifNot)
   res = (field, statFunc, c)
