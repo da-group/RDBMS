@@ -53,6 +53,8 @@ class Attribute(object):
         assert isinstance(v, TypeDict[self.type.value]), "wrong type of value!"
         self.__values.append(v)
 
+  def copyEmptyAttr(self):
+    return Attribute(name=self.name, type=self.type, key=self.key)
 
   def deleteValue(self, index):
     '''

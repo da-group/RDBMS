@@ -19,7 +19,7 @@ class Table:
             res += attrname+"    "
         res += "\n"
         for i in range(self.rowsize):
-            _, tupleValues = self.getTuple(i)
+            _a, tupleValues, _av = self.getTuple(i)
             for v in tupleValues:
                 res += str(v)+"    "
             res +='\n'
@@ -81,10 +81,13 @@ class Table:
     def getTuple(self, index: int):
         attrnames = []
         values = []
+        attrnamesAndValues = {}
         for attrname in self.attributes:
             attrnames.append(attrname)
-            values.append(self.attributes[attrname][index])
-        return attrnames, values
+            value = self.attributes[attrname][index]
+            values.append(value)
+            attrnamesAndValues[attrname] = value
+        return attrnames, values, attrnamesAndValues
 
     def addTuple(self, row):
         '''
@@ -248,6 +251,10 @@ class Table:
         
         for i in res:
             self.updateTuple(i, row)
+
+    # TODO
+    def groupBy(self, attributes):
+        pass
 
 
 if __name__ == "__main__":
