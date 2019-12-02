@@ -49,6 +49,10 @@ class Attribute(object):
 
 
   def getIndexWithBPlusTree(self, target):
+    '''
+    target is either int, float or tuple
+    tuple: (start, end)
+    '''
     assert self.btree, "btree does not exist"
     return self.btree.search(target)
 
