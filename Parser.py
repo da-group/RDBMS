@@ -44,10 +44,15 @@ def parseAction(string):
             attrs = "all"
         res["attrs"] = attrs
         
-        print(attrs)
+#        print(attrs)
     elif("insert" in string):
         res['action_type'] = "insert"
         string = string.split("insert ")[1].split("into ")[1]
+        tablename = string.split(' ')[0].strip()
+        res['tablename'] = tablename
+        
+        
+        
         attr_val ={}
         
         temp = re.findall(r'\(.*?\)',string)
@@ -72,8 +77,8 @@ def parseAction(string):
         
 
         #print(attrs)
-        print(values)
-        print("insert")
+#        print(values)
+#        print("insert")
         
     elif("delete" in string):
         res["action_type"] = "delete"
@@ -120,13 +125,13 @@ def parseAction(string):
                 attr_list.append(attr)
         res["tablename"] = tablename
         res["attrs"] = attr_list
-        print("create table")
+#        print("create table")
     elif("drop table" in string):
         res["action_type"] = "drop"
         tablename = string.split("drop table ")[1].strip()
         res['tablename'] = tablename
-        print(tablename)
-        print("drop table")
+#        print(tablename)
+#        print("drop table")
     elif("alter table" in string):
         string = string.split("alter table ")[1].strip().split(" ")
         tablename = string[0].strip()
@@ -137,18 +142,18 @@ def parseAction(string):
             attr_type = string[3].strip()
             attr = Attribute(name=attr_name, type=AttrTypes[attr_type.upper()])
             res["attr"] = attr
-            print("add")
+#            print("add")
         elif "drop" in string and len(string)==3:
             res["action_type"] = "alter drop"
             res['attr'] = attr_name
 #            print("drop")
 #        print(attr)
 #        print(tablename)
-        print("alter table")
+#        print("alter table")
     elif("create index" in string):
-        print("create index")
+#        print("create index")
     elif("drop index" in string):
-        print("drop index")
+#        print("drop index")
     else: print("CANNOT PARSE ACTIONS")
     
     
@@ -477,27 +482,5 @@ if __name__ == '__main__':
   select_2 = "select *"
   update = "UPDATE Person SET FirstName = 'Fred',LastName = 'Andromeda'"
   delete = "DELETE FROM Customers"
-  parse = parse(delete)  
+  parse = parse(insert)  
   print(parse)
-  
-  
-  
-#  res = parseCondition(statement.split("where")[1])
-#  print(res[0][0][1](3))
-#  print(res[0][1][1]("false"))
-#  print(res[1][1][1](datetime.strptime("07/20/2018", "%m/%d/%Y")))
-#
-#  statement = "t1, t2, t3"
-#  print(parseFroms(statement))
-#
-#  statement = "t1, t2 on t1.c2 = t2.c4"
-#  print(parseJoins([statement]))
-#
-#  statement = "c1, c2,c3"
-#  print(parseGroups(statement))
-#
-#  statement = "t1.c2 asc, t2.c3 desc"
-#  print(parseOrdered(statement))
-#
-#  statement = "sum(t1.c2) >= 2 and max(t2.c3) inside (2.3, 4.3)"
-#  print(parseHaving(statement))
