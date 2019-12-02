@@ -123,9 +123,9 @@ class BPlusTree(object):
     key: either int or tuple
     tuple: (start, end)
     '''
-    assert isinstance(key, int) or isinstance(key, tuple), "wrong query tuple "+str(key)
+    assert isinstance(key, int) or isinstance(key, float) or isinstance(key, tuple), "wrong query tuple "+str(key)
     # find the leaf node
-    if isinstance(key, int):
+    if isinstance(key, int) or isinstance(key, float):
       node = self.__searchNode(self.root, key)
       for i in range(node.size()):
         if key==node[i]:
