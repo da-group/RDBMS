@@ -51,10 +51,11 @@ def parseJoins(joins):
   res = []
   for join in joins:
     _, columns = join.split(" on ")
-    l = standardize(columns.split("="))
+    l = standardize(columns.split(" "))
     for i in range(len(l)):
       l[i] = l[i].strip()
-    assert len(l)==2, "wrong format of joins "+join
+    l[1] = SYMBOL_DICT[l[1]]
+    assert len(l)==3, "wrong format of joins "+join
     res.append(l)
   return res
 
@@ -250,7 +251,6 @@ def parseHaving(statement):
 
 
 
-
 def parseOrdered(statement):
   '''
   return a list of tuples.
@@ -342,7 +342,8 @@ def parse(statement):
 
 
 if __name__ == '__main__':
-  statement = "select c1 from t1 where not c1 inside (2.4, 4.5) and c2 in ('true', 'dfs') or c3 >= 3.4 and c4 inside (03/04/2018, 04/05/2019)"
+  statement = "select c1 from t1 where not c1 inside (2.4, 4.5) and c2 in ('true', 'dfs') or c3 >= 3.4 and \
+              c4 inside (03/04/2018, 04/05/2019)"
   res = parseCondition(statement.split("where")[1])
   print(res[0][0][1](3))
   print(res[0][1][1]("false"))
