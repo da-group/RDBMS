@@ -11,7 +11,7 @@ class Database():
     def __init__(self, name):
         self.name = name
         self.tables = {}    # {tablename: table}
-        self.foreignKeys = {}   # { t1: [{a1:(t2,a2)}] }
+        self.foreignKeys = {}   # { t1: [{a1:(t2,a2,"cascade")}] }
         self.filePath = "./data/"+name+".db"
 
     def __str__(self):
@@ -56,7 +56,7 @@ class Database():
         self.tables.pop(tableName)
 
 
-    def join(self, joinParams):
+    def join(self, joinParams, name = None):
         '''
         joinParams: 2 layer list [[table1_name, function_name, table2_name]]
         return table
@@ -167,23 +167,28 @@ class Database():
                 if attrname != attrName2:
                     attrsAfterJoin.append(t2.attributes[attrname].copyEmptyAttr())
 
-            table = Table('join_result', attrsAfterJoin)
+            table = None
+            if name is not None:
+                table = Table(name, attrsAfterJoin)
+            else:
+                table = Table('join_result', attrsAfterJoin)
+                
             for r in res:
                 table.addTuple(r)
             return table
 
 
-    def addForeignKey(self, t1, a1, t2, a2):
+    def addForeignKey(self, t1, a1, t2, a2, onDelete = "set null"):
         '''
-        t1,a1,t2,a2: str, table1_name, attribute1_name, table2_name, attribute2_name
+        t1,a1,t2,a2, ondelete: str, table1_name, attribute1_name, table2_name, attribute2_name, on delete operation
         '''
         assert t1 in self.tables and t2 in self.tables, "Wrong tables"
         assert a1 in self.tables[t1].attributes and a2 in self.tables[t2].attributes, "attribute doesn't match table"
 
         if t1 not in self.foreignKeys:
-            self.foreignKeys[t1] = [{a1:(t2,a2)}]
+            self.foreignKeys[t1] = [{a1:(t2,a2,onDelete)}]
         else:
-            self.foreignKeys[t1].append({a1:(t2,a2)})
+            self.foreignKeys[t1].append({a1:(t2,a2,onDelete)})
 
 
     def delForeignKey(self, t1, a1):
