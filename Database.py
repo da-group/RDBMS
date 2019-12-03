@@ -2,11 +2,14 @@ from Table import *
 from Attribute import *
 from Condition import *
 from Parser import *
+import pickle
 
 class Database():
     def __init__(self, name):
         self.name = name
         self.tables = {}    # {tablename: table}
+        self.foreignKeys = {}   # { t1: [{a1:(t2,a2)}] }
+        self.filePath = "./data/"+name+".db"
 
     def __str__(self):
         res = "DatabaseName: "+self.name+"\n\n"
@@ -15,6 +18,12 @@ class Database():
             res += "TableAttributes: "+ str(self.tables[tableName].attributes.keys())+"\n"
             res += "\n"
         return res
+
+    def saveToFile(self, path = None):
+        if path is None:
+            path = self.filePath
+        f = open(path, "wb")
+        pickle.dump(self, f)
 
     # 查看数据库内table名称
     def getTableNames(self):
@@ -43,6 +52,7 @@ class Database():
         assert tableName in self.tables.keys(), 'Drop error: The table does not exists in the dataset'
         self.tables.pop(tableName)
 
+
     def join(self, joinParams):
         '''
         joinParams: 2 layer list [[table1_name, function_name, table2_name]]
@@ -67,14 +77,6 @@ class Database():
             assert attrName1 in table1.attributes.keys() and attrName2 in table2.attributes.keys(), "Wrong join attributes"
             funcName = joinParam[1]
             assert funcName in functions, "Wrong join function"
-
-            # Nested join操作
-            # for each tuple tr in r do begin 
-            #   for each tuple ts in s do begin 
-            #       test pair (tr,ts) tosee if they satisfy the join condition
-            #       if they do, add tr^ts to the result. 
-            #   end 
-            # end
 
             res = [] # list of rows, rows: {attrname: value}
             for i in range(t1.rowsize):
@@ -107,7 +109,32 @@ class Database():
                 table.addTuple(r)
             return table
 
+    def addForeignKey(self, t1, a1, t2, a2):
+        '''
+        t1,a1,t2,a2: str, table1_name, attribute1_name, table2_name, attribute2_name
+        '''
+        assert t1 in self.tables and t2 in self.tables, "Wrong tables"
+        assert a1 in self.tables[t1].attributes and a2 in self.tables[t2].attributes, "attribute doesn't match table"
 
+        if t1 not in self.foreignKeys:
+            self.foreignKeys[t1] = [{a1:(t2,a2)}]
+        else:
+            self.foreignKeys[t1].append({a1:(t2,a2)})
+
+
+    def delForeignKey(self, t1, a1):
+        assert t1 in self.foreignKeys, "Wrong table"
+        for i, dic in enumerate(self.foreignKeys[t1]):
+            if a1 in dic: 
+                self.foreignKeys[t1].pop(i)
+                break
+        else:
+            raise Exception("Wrong attributes")
+
+
+    def showForeignKeys(self):
+        return str(self.foreignKeys)
+        
 
 
 
@@ -142,6 +169,12 @@ if __name__ == "__main__":
     t1 = Table('t1', [a1, a2])
     t2 = Table('t2', [a3, a4, a5])
 
+    f1 = open("./data/t1.tb", "wb")
+    pickle.dump(t1, f1)
+    f1 = open("./data/t1.tb", "rb")
+    t1 = pickle.load(f1)
+    print(t1)
+
     d1.addTable(t1)
     d1.addTable(t2)
 
@@ -149,3 +182,10 @@ if __name__ == "__main__":
     p = parseJoins([statement])
     print(d1)
     print(d1.join(p))
+    join_table = d1.join(p)
+    select_table = join_table.select("*", [[['a3',condition('inside', (1, 2))]]])
+    print(select_table)
+
+    d1.addForeignKey("t1", "a1", "t2", "a3")
+    d1.addForeignKey("t2", "a3", "t1", "a2")
+    print(d1.showForeignKeys())
