@@ -45,7 +45,7 @@ class Attribute(object):
   def buildIndex(self, order):
     self.btree = BPlusTree(order)
     for value, key in enumerate(self.__values):
-      self.insert(key, value)
+      self.btree.insert(key, value)
 
 
   def getIndexWithBPlusTree(self, target):

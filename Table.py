@@ -441,13 +441,20 @@ if __name__ == "__main__":
 
     a1 = Attribute(name="a1", type=AttrTypes.INT, key=[AttrKeys.NOT_NULL])
     for i in range(1,1001):
-        a1.addValue(i)
+        for j in range(100):
+            a1.addValue(i)
     a2 = Attribute(name="a2", type=AttrTypes.INT, key=[AttrKeys.NOT_NULL])
-    for i in range(1,1001):
+    for i in range(1,100001):
         a2.addValue(i)
 
+    time1 = time.time()
     a1.buildIndex(10)
+    time2 = time.time()
+    print(time2-time1)
     t1 = Table('t1', [a1, a2])
-    res = t1.select(["a1"], [[['a1',('inside', ['2', '5'], False)]]])
+    time3 = time.time()
+    res = t1.select(["a1"], [[['a1',('inside', ['2', '1000'], False)]]])
+    time4 = time.time()
     print(res)
+    print(time4-time3)
 
