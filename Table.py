@@ -241,6 +241,7 @@ class Table:
     def delete(self, conditions=None):
         if conditions is None:
             self.deleteTuple(range(self.rowsize))
+            return
                 
         res = []
 
