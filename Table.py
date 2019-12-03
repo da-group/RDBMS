@@ -150,11 +150,18 @@ class Table:
             self.attributes[attrname].updateValue(index, row[attrname])
 
 
-
-
-    # 暂不实现
-    def project(self, attributes: list, table):
-        pass
+    # 可能有重复行
+    def project(self, attrnames: list, name = None):
+        table = None
+        if name is not None:
+            table = Table(name)
+        else:
+            table = Table('project_result')
+        if attrnames == '*':
+            attrnames = self.attributes.keys()
+        for attrname in attrnames:
+            table.addAttribute(self.attributes[attrname])
+        return table
 
     def select(self, attrnames: list, conditions: list, name=None, reverse = False):
         '''
