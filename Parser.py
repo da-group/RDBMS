@@ -212,7 +212,7 @@ def parseFroms(statement):
 def parseJoins(joins):
   '''
   return a list of list
-  list: (table1.column1, table2.column2)
+  list: (table1.column1, function name, table2.column2)
   '''
   res = []
   for join in joins:
