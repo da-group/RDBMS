@@ -36,7 +36,11 @@ class SimpleSql(object):
  
   
   def _create(self,res):
-      self.database.createTable(res['tablename'],res['attrs'])         
+      self.database.createTable(res['tablename'],res['attrs'])
+      if("foreign_key") in res.keys():
+          for f in res["foreign_key"]:
+              assert len(f)==4,"Wrong foreign key"
+              self.database.addForeignKey(f[0],f[1],f[2],f[3])
       
       
   def _alter(self,res):
@@ -49,7 +53,27 @@ class SimpleSql(object):
       
   def _drop(self, res):
       self.database.dropTable(res['tablename'])
+      
+      
   def _select(self, res):
+      tables = res['froms']
+      attrs = res['attrs']
+      conditions = res['conditions']
+      
+      table_condition = {}
+      table_attrs = {}
+      
+      #without aggregate operations
+      for t in tables:
+          assert t in self.database.tables.keys(), "No such table"
+          a_list = []
+          for a in attrs:
+              if(a in t.attributes.keys()):
+                  a_list.append(a)
+              elif a == "*":
+                  a_list = t.attributes.keys()
+                  
+          table_attrs[table.name] = a_list
       
       
       

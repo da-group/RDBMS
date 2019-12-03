@@ -110,8 +110,43 @@ def parseAction(string):
         string = string.split("create table ")[1]
         temp =re.findall(r'\(.*\)',string)[0]
         tablename = string.replace(temp,'').strip()
-        ak = temp.lstrip("(").rstrip(")").split(",")
+        
+        if "foreign key" in temp:
+            res['foreign_key'] = []
+            no_fk = temp.split("foreign key")[0]
+            fk = temp.split("foreign key")[1:]
+            temp = no_fk
+            for f in fk:
+                f = f.strip()
+                f_key = []
+                f_key.append(tablename)
+                splited = f.split('references')
+                
+                a1 = re.findall(r'[(](.*?)[)]',splited[0])[0]
+                a2 = re.findall(r'[(](.*?)[)]',splited[1])[0]
+                
+                rp = re.findall(r'\(.*?\)',splited[1])[0]
+                t2 = splited[1].replace(rp,'').strip(")").strip()
+                
+                f_key.append(a1)
+                f_key.append(t2)
+                f_key.append(a2)
+#                print(f_key)
+                res['foreign_key'].append(f_key)
+
+            
+            
+        temp = temp.strip()
+        ak = temp.lstrip("(").rstrip(")").strip(',').split(",")
+#        print(ak)
         primary =  ak[len(ak)-1].split("primary key")[1].lstrip("(").rstrip(")").strip()
+        
+        
+        
+        
+        
+        
+       
         attr_list = []
         
         for a in ak:
@@ -121,8 +156,9 @@ def parseAction(string):
                 a_type = a[1]
                 a_key = "NULL"
                 if a_name == primary: a_key = AttrKeys.PRIMARY
-                if(len(a)>2):
-                    if a[2] =="not": a_key = AttrKeys.NOT_NULL   
+                elif(len(a)>2):
+                    if a[2] =="not": a_key = AttrKeys.NOT_NULL
+                    else: a_key = AttrKeys.NULL
                 attr = Attribute(name=a_name, type=AttrTypes[a_type.upper()], key=a_key)
                 attr_list.append(attr)
         res["tablename"] = tablename
@@ -289,7 +325,7 @@ def __parseSingleCondition(statement):
       targets[i] = targets[i][:-1]
 
   # c = __parseConditionTuple(symbol, targets, ifNot)
-  c = (symbol, targets, ifNot)
+  c = (SYMBOL_DICT[symbol], targets, ifNot)
 
   res = (field, c)
   return res
@@ -356,7 +392,7 @@ def __parseSingleHaving(statement):
   statFunc = FuncMap[tmp[0].strip()]
   field = tmp[1].strip()
 
-  c = parseConditionTuple(symbol, targets, ifNot)
+  c = __parseConditionTuple(symbol, targets, ifNot)
   res = (field, statFunc, c)
   return res
 
@@ -433,7 +469,7 @@ def parse(statement):
 
   if " where " in statement:
     statement, conditions = statement.split(" where ")
-    print(conditions)
+#    print(conditions)
   else:
     statement = statement
 
@@ -486,5 +522,7 @@ if __name__ == '__main__':
   select_2 = "select *"
   update = "UPDATE Person SET FirstName = 'Fred',LastName = 'Andromeda'"
   delete = "DELETE FROM Customers"
-  parse = parse(insert)  
+  foreignkey = "CREATE TABLE stu_course(index int, sid int, cid int,primary key(index), foreign key(sid) references student(roll_no),foreign key(cid) references course(c_id));"
+  join = "SELECT Websites.id, Websites.name, access_log.count, access_log.date FROM Websites where Websites.id=access_log.site_id;"
+  parse = parse(foreignkey)  
   print(parse)
