@@ -1,6 +1,7 @@
 from Attribute import *
 from Parser import *
 import copy
+import time
 
 class Table:
 
@@ -180,7 +181,10 @@ class Table:
         return table
 
 
-    def delete(self, conditions):
+    def delete(self, conditions=None):
+        if conditions is None:
+            self.deleteTuple(range(self.rowsize))
+                
         res = []
 
         for i in range(self.rowsize):
@@ -318,56 +322,67 @@ class Table:
 if __name__ == "__main__":
 
     #===============================test1===========================================
-    # a1 = Attribute(name="a1", type=AttrTypes.INT, key=[AttrKeys.PRIMARY])
-    # a1.addValue(1)
-    # a2 = Attribute(name="a2", type=AttrTypes.VARCHAR, key=[AttrKeys.NOT_NULL])
-    # a2.addValue('hello')
-    # a3 = Attribute(name="a3", type=AttrTypes.FLOAT, key=[AttrKeys.NULL])
+    a1 = Attribute(name="a1", type=AttrTypes.INT, key=[AttrKeys.PRIMARY])
+    a1.addValue(1)
+    a2 = Attribute(name="a2", type=AttrTypes.VARCHAR, key=[AttrKeys.NOT_NULL])
+    a2.addValue('hello')
+    a3 = Attribute(name="a3", type=AttrTypes.FLOAT, key=[AttrKeys.NULL])
 
-    # t1 = Table('t1', [a1, a2, a3])
+    t1 = Table('t1', [a1, a2, a3])
+    print(t1)
+    t1.addTuple({'a1':2,'a2':'world', 'a3':0.5})
+    print(t1)
+    t1.updateTuple(1,{'a1':5,'a2':'foooo', 'a3':2.5})
+    print(t1)
+    # t1.deleteTuple(0)
     # print(t1)
-    # t1.addTuple({'a1':2,'a2':'world', 'a3':0.5})
+    # t2 = t1.select(["a1"], [[['a1',condition('inside', (1, 2), True)]]])
+    t2 = t1.select("*", [[['a1',condition('inside', (1, 2))]]])
+    print(t2)
+    # t1.delete([[['a1',condition('inside', (1, 2))]]])
     # print(t1)
-    # t1.updateTuple(1,{'a1':5,'a2':'foooo', 'a3':2.5})
-    # print(t1)
-    # # t1.deleteTuple(0)
-    # # print(t1)
-    # # t2 = t1.select(["a1"], [[['a1',condition('inside', (1, 2), True)]]])
-    # t2 = t1.select("*", [[['a1',condition('inside', (1, 2))]]])
-    # print(t2)
-    # # t1.delete([[['a1',condition('inside', (1, 2))]]])
-    # # print(t1)
-    # t1.update([[['a1',condition('inside', (1, 2))]]], {'a1':100,'a2':'hhhhh', 'a3':3.14})
-    # print(t1)
+    t1.delete()
+    print(t1)
+    t1.update([[['a1',condition('inside', (1, 2))]]], {'a1':100,'a2':'hhhhh', 'a3':3.14})
+    print(t1)
 
 
     #===============================test2=join======================================
-    a1 = Attribute(name="a1", type=AttrTypes.INT, key=[AttrKeys.PRIMARY])
-    a1.addValue(1)
-    a1.addValue(1)
-    a1.addValue(1)
-    a1.addValue(1)
-    a1.addValue(2)
-    a1.addValue(2)
-    a2 = Attribute(name="a2", type=AttrTypes.INT, key=[AttrKeys.NOT_NULL])
-    a2.addValue(2)
-    a2.addValue(2)
-    a2.addValue(3)
-    a2.addValue(3)
-    a2.addValue(2)
-    a2.addValue(2)
-    a3 = Attribute(name="a3", type=AttrTypes.INT, key=[AttrKeys.NULL])
-    a3.addValue(3)
-    a3.addValue(9)
-    a3.addValue(3)
-    a3.addValue(9)
-    a3.addValue(3)
-    a3.addValue(9)
-    t1 = Table('t1', [a1, a2, a3])
-    statement = "a1,a3"
-    p = parseGroups(statement)
-    groupByResult = t1.groupBy(p)
-    for t in groupByResult:
-        print(t)
+    # a1 = Attribute(name="a1", type=AttrTypes.INT, key=[AttrKeys.PRIMARY])
+    # a1.addValue(1)
+    # a1.addValue(1)
+    # a1.addValue(1)
+    # a1.addValue(1)
+    # a1.addValue(2)
+    # a1.addValue(2)
+    # a2 = Attribute(name="a2", type=AttrTypes.INT, key=[AttrKeys.NOT_NULL])
+    # a2.addValue(2)
+    # a2.addValue(2)
+    # a2.addValue(3)
+    # a2.addValue(3)
+    # a2.addValue(2)
+    # a2.addValue(2)
+    # a3 = Attribute(name="a3", type=AttrTypes.INT, key=[AttrKeys.NULL])
+    # a3.addValue(3)
+    # a3.addValue(9)
+    # a3.addValue(3)
+    # a3.addValue(9)
+    # a3.addValue(3)
+    # a3.addValue(9)
+    # t1 = Table('t1', [a1, a2, a3])
+    # statement = "a1,a3"
+    # p = parseGroups(statement)
+    # groupByResult = t1.groupBy(p)
+    # for t in groupByResult:
+    #     print(t)
         
 
+    #============================test time====================
+    # a1 = Attribute(name="a1", type=AttrTypes.INT, key=[AttrKeys.NOT_NULL])
+    # for i in range(12, 10000):
+    #     for j in range(100):
+    #         a1.addValue(i)
+    # t1 = time.time()
+    # a1.getIndexByCondition(condition('inside', (3, 10)))
+    # t2 = time.time()
+    # print(t2-t1)
