@@ -56,6 +56,12 @@ class Attribute(object):
     assert self.btree, "btree does not exist"
     return self.btree.search(target)
 
+  def getSortedIndexList(self):
+    l = [(i, value) for i, value in enumerate(self.__values)]
+    l = sorted(l, key=lambda ele : ele[1])
+    res = [ele[0] for ele in l]
+    return res
+
   def getType(self):
      return str(self.type.value)
 
@@ -132,13 +138,14 @@ class Attribute(object):
 
 if __name__=='__main__':
     a = Attribute(name="a1", type=AttrTypes.INT, key=[AttrKeys.NULL])
-    a.addValue(None)
+    a.addValue(3)
+    a.addValue(2)
     a.addValue(1)
-    a.addValue(1)
+    print(a.getSortedIndexList())
     # a.updateValue(0, 2)
     # a.deleteValue([0, 1])
-    c = condition('greater', 0)
-    index = a.getIndexByCondition(c)
-    print(index)
-    a1 = a.getAttributeByIndex(index)
-    print(a1[0])
+    # c = condition('greater', 0)
+    # index = a.getIndexByCondition(c)
+    # print(index)
+    # a1 = a.getAttributeByIndex(index)
+    # print(a1[0])
