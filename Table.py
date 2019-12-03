@@ -156,7 +156,7 @@ class Table:
     def project(self, attributes: list, table):
         pass
 
-    def select(self, attrnames: list, conditions: list, reverse = False):
+    def select(self, attrnames: list, conditions: list, name=None, reverse = False):
         '''
         attrnames: * or list of attrnames
         return a table containing satisfied rows and their attributes
@@ -226,7 +226,11 @@ class Table:
         if reverse:
             res = res[::-1]
 
-        table = Table('select_result')
+        table = None
+        if name is not None:
+            table = Table(name)
+        else:
+            table = Table('select_result')
         if attrnames == '*':
             attrnames = self.attributes.keys()
         for attrname in attrnames:
@@ -462,9 +466,9 @@ if __name__ == "__main__":
     t1 = Table('t1', [a1, a2, a3])
     statement = "a1,a3"
     ass = parseGroups(statement)
-    # havingState = "avg(t1.a1) > 1"
-    # ph = parseHaving(havingState)
-    groupByResult = t1.groupByHaving(ass)
+    havingState = "avg(t1.a1) > 1"
+    ph = parseHaving(havingState)
+    groupByResult = t1.groupByHaving(ass, ph)
     for t in groupByResult:
         print(t)
         
