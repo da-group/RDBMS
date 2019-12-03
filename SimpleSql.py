@@ -47,6 +47,8 @@ class SimpleSql(object):
           for f in res["foreign_key"]:
               assert len(f)==4,"Wrong foreign key"
               self.database.addForeignKey(f[0],f[1],f[2],f[3])
+              
+       self.save_database()
       
       
   def _alter(self,res):
@@ -56,10 +58,10 @@ class SimpleSql(object):
       elif(res["action_type"] == "alter drop"):
           table = self.database.getTableByName(res['tablename'])
           table.deleteAttribute(res['attr'])
-      
+      self.save_database()
   def _drop(self, res):
       self.database.dropTable(res['tablename'])
-      
+      self.save_database()
       
   def _select(self, res):
       tables = res['froms']
@@ -128,7 +130,7 @@ class SimpleSql(object):
         
       table.addTuple(res['attrs_values'])
       print(table)
-      
+      self.save_database()
       
   def _update(self,res):
       table = self.database.getTableByName(res['tablename'])
@@ -136,6 +138,7 @@ class SimpleSql(object):
       row = res['assignments']
       table.update(conditions, row)
       print(table)
+      self.save_database()
   
   def _delete(self, res):
     table = self.database.getTableByName(res['froms'][0])
@@ -143,7 +146,7 @@ class SimpleSql(object):
         conditions = res['conditions']
         table.delete(conditions)
     else: table.delete()
-    
+    self.save_database()
     print(table)
     
     
@@ -163,7 +166,7 @@ class SimpleSql(object):
       table = self.database.getTableByName(res['tablename'])
       attr = table.getAttribute(res['attr'])
       attr.buildIndex(10)
-      
+      self.save_database()
       
       
 
