@@ -173,21 +173,24 @@ class Table:
                 and self.attributes[attrnames[0]].btree is not None \
                 and len(conditions) == 1 and len(conditions[0]) == 1 \
                 and conditions[0][0][0] == attrnames[0] \
-                and conditions[0][0][1][0] in ["equal","inside","greater","smaller","greater_equal","smaller_equal"]:
+                and conditions[0][0][1][0] in ["=","inside",">","<",">=","<="]:
             
             c = conditions[0][0][1]
-            if c[0] == "equal":
-                target = c[1][0]
-            elif c[0] == "greater":
-                target = (c[1][0]+1, float("inf"))
-            elif c[0] == "smaller":
-                target = (float("-inf"), c[1][0]-1)
-            elif c[0] == "greater_equal":
-                target = (c[1][0], float("inf"))
-            elif c[0] == "smaller_equal":
-                target = (float("-inf"), c[1][0])
+            if c[0] == "=":
+                target = int(c[1][0])
+            elif c[0] == ">":
+                target = (int(c[1][0])+1, float("inf"))
+            elif c[0] == "<":
+                target = (float("-inf"), int(c[1][0])-1)
+            elif c[0] == ">=":
+                target = (int(c[1][0]), float("inf"))
+            elif c[0] == "<=":
+                target = (float("-inf"), int(c[1][0]))
             elif c[0] == "inside":
-                target = tuple(c[1])
+                l = c[1]
+                l[0] = int(c[1][0])
+                l[1] = int(c[1][1])
+                target = tuple(l)
                 
             res = self.attributes[attrnames[0]].getIndexWithBPlusTree(target)
 
@@ -437,14 +440,14 @@ if __name__ == "__main__":
     # print(t2-t1)
 
     a1 = Attribute(name="a1", type=AttrTypes.INT, key=[AttrKeys.NOT_NULL])
-    for i in range(1,10001):
+    for i in range(1,1001):
         a1.addValue(i)
     a2 = Attribute(name="a2", type=AttrTypes.INT, key=[AttrKeys.NOT_NULL])
-    for i in range(1,10001):
+    for i in range(1,1001):
         a2.addValue(i)
 
     a1.buildIndex(10)
     t1 = Table('t1', [a1, a2])
-    res = t1.select(["a1"], [[['a1',('smaller', [2], True)]]])
+    res = t1.select(["a1"], [[['a1',('inside', ['2', '5'], False)]]])
     print(res)
 
