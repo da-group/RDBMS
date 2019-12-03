@@ -137,10 +137,12 @@ def parseAction(string):
             
             
         temp = temp.strip()
-        ak = temp.lstrip("(").rstrip(")").strip(',').split(",")
-#        print(ak)
-        primary =  ak[len(ak)-1].split("primary key")[1].lstrip("(").rstrip(")").strip()
+        ak = temp.split("primary key")[0]
+        ak = ak.lstrip("(").rstrip(")").strip(',').split(",")
+        primaries = temp.split("primary key")[1].strip(',').lstrip("(").rstrip(")").strip().split(',')
+        print(ak)
         
+       
         
         
         
@@ -155,7 +157,7 @@ def parseAction(string):
                 a_name = a[0]
                 a_type = a[1]
                 a_key = "NULL"
-                if a_name == primary: a_key = AttrKeys.PRIMARY
+                if a_name in primaries: a_key = AttrKeys.PRIMARY
                 elif(len(a)>2):
                     if a[2] =="not": a_key = AttrKeys.NOT_NULL
                     else: a_key = AttrKeys.NULL
@@ -189,9 +191,24 @@ def parseAction(string):
 #        print(tablename)
 #        print("alter table")
     elif("create index" in string):
-        print("create index")
+        res['action_type'] ="create index"
+        temp = string.split("create index on ")[1]
+        attr = re.findall(r'[(](.*?)[)]',string)[0].strip()
+        tablename = temp.replace(re.findall(r'\(.*?\)',temp)[0],'')
+        
+        res['tablename'] = tablename
+        res['attr'] = attr
+        
+        print(attr)
+        print(tablename)
+        
+
     elif("drop index" in string):
         print("drop index")
+    elif("create database" in string):
+        res['action_type'] = "create db"
+        db = string.split("create database ")[1].strip()
+        res['database_name'] = db
     else: print("CANNOT PARSE ACTIONS")
     
     
@@ -212,7 +229,7 @@ def parseFroms(statement):
 def parseJoins(joins):
   '''
   return a list of list
-  list: (table1.column1, function name, table2.column2)
+  list: (table1.column1, table2.column2)
   '''
   res = []
   for join in joins:
@@ -514,6 +531,7 @@ if __name__ == '__main__':
   statement = "select c1 from t1 where not c1 inside (2.4, 4.5) and c2 in ('true', 'dfs') or c3 >= 3.4 and c4 inside (03/04/2018, 04/05/2019)"
   
   create = "CREATE TABLE Students(ROLL_NO int,NAME varchar NOT NULL,SUBJECT varchar, primary key(roll_No));"
+  create_2 = "CREATE TABLE COURSE(C_ID int,CNAME varchar,primary key(c_id));"
   alter_1 = "ALTER TABLE students ADD gender varchar"
   alter_2 = "alter table students drop gender"
   drop = "drop table students"
@@ -522,7 +540,8 @@ if __name__ == '__main__':
   select_2 = "select *"
   update = "UPDATE Person SET FirstName = 'Fred',LastName = 'Andromeda'"
   delete = "DELETE FROM Customers"
-  foreignkey = "CREATE TABLE stu_course(index int, sid int, cid int,primary key(index), foreign key(sid) references student(roll_no),foreign key(cid) references course(c_id));"
+  index = "create index on student(roll_no)"
+  foreignkey = "CREATE TABLE stu_course(index int, sid int, cid int,primary key(sid,cid), foreign key(sid) references student(roll_no),foreign key(cid) references course(c_id));"
   join = "SELECT Websites.id, Websites.name, access_log.count, access_log.date FROM Websites where Websites.id=access_log.site_id;"
-  parse = parse(foreignkey)  
+  parse = parse(create_2)
   print(parse)
