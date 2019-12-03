@@ -56,6 +56,9 @@ class Attribute(object):
     assert self.btree, "btree does not exist"
     return self.btree.search(target)
 
+  def getType(self):
+     return str(self.type.value)
+
 
   def addValue(self, v):
     '''
