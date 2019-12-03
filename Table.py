@@ -161,38 +161,64 @@ class Table:
         attrnames: * or list of attrnames
         return a table containing satisfied rows and their attributes
         '''
+        #判断attrnames是不是都在该表内
+        if isinstance(attrnames, list):
+            for attrname in attrnames:
+                assert attrname in self.attributes.keys(), "Select non-existent attribute"
+
         res = []
 
-        for i in range(self.rowsize):
-            orFlag = False
+        # 如果有index用index
+        if isinstance(attrnames, list) and len(attrnames) == 1 \
+                and self.attributes[attrnames[0]].btree is not None \
+                and len(conditions) == 1 and len(conditions[0]) == 1 \
+                and conditions[0][0][0] == attrnames[0] \
+                and conditions[0][0][1][0] in ["equal","inside","greater","smaller","greater_equal","smaller_equal"]:
+            
+            c = conditions[0][0][1]
+            if c[0] == "equal":
+                target = c[1][0]
+            elif c[0] == "greater":
+                target = (c[1][0]+1, float("inf"))
+            elif c[0] == "smaller":
+                target = (float("-inf"), c[1][0]-1)
+            elif c[0] == "greater_equal":
+                target = (c[1][0], float("inf"))
+            elif c[0] == "smaller_equal":
+                target = (float("-inf"), c[1][0])
+            elif c[0] == "inside":
+                target = tuple(c[1])
+                
+            res = self.attributes[attrnames[0]].getIndexWithBPlusTree(target)
 
-            for orConds in conditions:
-                andFlag = True
-
-                for andconds in orConds:
-                    key, func = andconds
-                    s = key.split(".")
-                    if len(s) == 1:
-                        attrname = s[0]
-                    elif len(s) == 2:
-                        tablename = s[0]
-                        if tablename != self.name:
-                            continue
-                        attrname = s[1]
-                    else:
-                        raise Exception("Wrong conditions")
-                    
-                    b = func(self.attributes[attrname][i])
-                    if not b:
-                        andFlag = False
+        else: # 没有index
+            for i in range(self.rowsize):
+                orFlag = False
+                for orConds in conditions:
+                    andFlag = True
+                    for andconds in orConds:
+                        key, func = andconds
+                        func = parseConditionTuple(*func)
+                        s = key.split(".")
+                        if len(s) == 1:
+                            attrname = s[0]
+                        elif len(s) == 2:
+                            tablename = s[0]
+                            if tablename != self.name:
+                                continue
+                            attrname = s[1]
+                        else:
+                            raise Exception("Wrong conditions")
+                        
+                        b = func(self.attributes[attrname][i])
+                        if not b:
+                            andFlag = False
+                            break
+                    if andFlag:
+                        orFlag = True
                         break
-
-                if andFlag:
-                    orFlag = True
-                    break
-
-            if orFlag:
-                res.append(i)
+                if orFlag:
+                    res.append(i)
 
         if reverse:
             res = res[::-1]
@@ -214,12 +240,11 @@ class Table:
 
         for i in range(self.rowsize):
             orFlag = False
-
             for orConds in conditions:
                 andFlag = True
-
                 for andconds in orConds:
                     key, func = andconds
+                    func = parseConditionTuple(*func)
                     s = key.split(".")
                     if len(s) == 1:
                         attrname = s[0]
@@ -235,11 +260,9 @@ class Table:
                     if not b:
                         andFlag = False
                         break
-
                 if andFlag:
                     orFlag = True
                     break
-
             if orFlag:
                 res.append(i)
 
@@ -254,12 +277,11 @@ class Table:
 
         for i in range(self.rowsize):
             orFlag = False
-
             for orConds in conditions:
                 andFlag = True
-
                 for andconds in orConds:
                     key, func = andconds
+                    func = parseConditionTuple(*func)
                     s = key.split(".")
                     if len(s) == 1:
                         attrname = s[0]
@@ -275,11 +297,9 @@ class Table:
                     if not b:
                         andFlag = False
                         break
-
                 if andFlag:
                     orFlag = True
                     break
-
             if orFlag:
                 res.append(i)
         
@@ -350,30 +370,30 @@ class Table:
 if __name__ == "__main__":
 
     #===============================test1===========================================
-    a1 = Attribute(name="a1", type=AttrTypes.INT, key=[AttrKeys.PRIMARY])
-    a1.addValue(1)
-    a2 = Attribute(name="a2", type=AttrTypes.VARCHAR, key=[AttrKeys.NOT_NULL])
-    a2.addValue('hello')
-    a3 = Attribute(name="a3", type=AttrTypes.FLOAT, key=[AttrKeys.NULL])
+    # a1 = Attribute(name="a1", type=AttrTypes.INT, key=[AttrKeys.PRIMARY])
+    # a1.addValue(1)
+    # a2 = Attribute(name="a2", type=AttrTypes.VARCHAR, key=[AttrKeys.NOT_NULL])
+    # a2.addValue('hello')
+    # a3 = Attribute(name="a3", type=AttrTypes.FLOAT, key=[AttrKeys.NULL])
 
-    t1 = Table('t1', [a1, a2, a3])
-    print(t1)
-    t1.insertTuple({'a1':2,'a2':'world', 'a3':0.5})
-    t1.insertTuple({'a1':2,'a2':'world', 'a3':0.5})
-    print(t1)
-    t1.updateTuple(1,{'a1':5,'a2':'foooo', 'a3':2.5})
-    print(t1)
-    # t1.deleteTuple(0)
+    # t1 = Table('t1', [a1, a2, a3])
     # print(t1)
-    # t2 = t1.select(["a1"], [[['a1',condition('inside', (1, 2), True)]]])
-    t2 = t1.select("*", [[['a1',condition('inside', (1, 2))]]])
-    print(t2)
-    # t1.delete([[['a1',condition('inside', (1, 2))]]])
+    # t1.insertTuple({'a1':2,'a2':'world', 'a3':0.5})
+    # t1.insertTuple({'a1':2,'a2':'world', 'a3':0.5})
     # print(t1)
-    # t1.delete()
+    # t1.updateTuple(1,{'a1':5,'a2':'foooo', 'a3':2.5})
     # print(t1)
-    t1.update([[['a1',condition('inside', (1, 2))]]], {'a2':'hhhhh', 'a3':3.14})
-    print(t1)
+    # # t1.deleteTuple(0)
+    # # print(t1)
+    # # t2 = t1.select(["a1"], [[['a1',condition('inside', (1, 2), True)]]])
+    # t2 = t1.select("*", [[['a1',('inside', (1, 2))]]])
+    # print(t2)
+    # # t1.delete([[['a1',condition('inside', (1, 2))]]])
+    # # print(t1)
+    # # t1.delete()
+    # # print(t1)
+    # t1.update([[['a1',condition('inside', (1, 2))]]], {'a2':'hhhhh', 'a3':3.14})
+    # print(t1)
 
 
     #===============================test2=join======================================
@@ -415,3 +435,16 @@ if __name__ == "__main__":
     # a1.getIndexByCondition(condition('inside', (3, 10)))
     # t2 = time.time()
     # print(t2-t1)
+
+    a1 = Attribute(name="a1", type=AttrTypes.INT, key=[AttrKeys.NOT_NULL])
+    for i in range(1,10001):
+        a1.addValue(i)
+    a2 = Attribute(name="a2", type=AttrTypes.INT, key=[AttrKeys.NOT_NULL])
+    for i in range(1,10001):
+        a2.addValue(i)
+
+    a1.buildIndex(10)
+    t1 = Table('t1', [a1, a2])
+    res = t1.select(["a1"], [[['a1',('smaller', [2], True)]]])
+    print(res)
+
