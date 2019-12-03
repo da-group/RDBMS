@@ -5,6 +5,7 @@ from Parser import *
 import pickle
 import time
 import math
+import copy
 
 class Database():
     def __init__(self, name):
@@ -84,7 +85,7 @@ class Database():
             # 如果两个表tuple数量差距十分大e.g |a1|<lg(|a2|) 用nested-loop
             size1 = t1.attributes[attrName1].getSize()
             size2 = t2.attributes[attrName2].getSize()
-            if size1 < math.log2(size2) or size2 < math.log2(size1):
+            if size1 < math.log2(size2) or size2 < math.log2(size1) or funcName != "equal":
                 # join using nested-loop
                 for i in range(t1.rowsize):
                     # 获取第一张表的tuple
@@ -106,38 +107,56 @@ class Database():
             else:
                 '''
                 join using merge-scan:
-                Get First Row T1R from Table1
-                Get First Row T2R from Table2
-                While Not End of Table1 and Not End of Table2
-                    If T1R joins with T2R
-                        Returns (T1R, T2R)
-                        Get Next Row from Table2
-                    Else T1R < T2R
-                        Get NEXT Row from Table1
-                    Else
-                        Get Next Row from Table2
-                End Loop
+                http://www.dcs.ed.ac.uk/home/tz/phd/thesis/node20.htm
                 '''
                 sortedIndices1 = t1.attributes[attrName1].getSortedIndexList()
                 sortedIndices2 = t2.attributes[attrName2].getSortedIndexList()
+
                 i = j = 0
                 while i<len(sortedIndices1) and j<len(sortedIndices2):
                     _a1, _t1, tuple1 = t1.getTuple(sortedIndices1[i])
                     _a2, _t2, tuple2 = t2.getTuple(sortedIndices2[j])
-                    # 判断是否满足条件
-                    b = functions[funcName](tuple1[attrName1], tuple2[attrName2], False)
-                    if b:
-                        tuple2.pop(attrName2)
-                        row = {}
-                        row.update(tuple1)
-                        row.update(tuple2)
-                        res.append(row)
+                    if tuple1[attrName1] > tuple2[attrName2]:
                         j += 1
                     elif tuple1[attrName1] < tuple2[attrName2]:
                         i += 1
                     else:
+                        copy_tuple2 = copy.deepcopy(tuple2)
+                        copy_tuple2.pop(attrName2)
+                        row = {}
+                        row.update(tuple1)
+                        row.update(copy_tuple2)
+                        res.append(row)
+
+                        jj = j+1
+                        while jj<len(sortedIndices2):
+                            _a2, _t2, tuple2_temp = t2.getTuple(sortedIndices2[jj])
+                            if tuple1[attrName1] == tuple2_temp[attrName2]:
+                                copy_tuple2_temp = copy.deepcopy(tuple2_temp)
+                                copy_tuple2_temp.pop(attrName2)
+                                row = {}
+                                row.update(tuple1)
+                                row.update(copy_tuple2_temp)
+                                res.append(row)
+                                jj += 1
+                            else: break
+                        
+                        ii = i+1
+                        while ii<len(sortedIndices1):
+                            _a1, _t1, tuple1_temp = t1.getTuple(sortedIndices1[ii])
+                            if tuple1_temp[attrName1] == tuple2[attrName2]:
+                                copy_tuple2_temp = copy.deepcopy(tuple2_temp)
+                                copy_tuple2_temp.pop(attrName2)
+                                row = {}
+                                row.update(tuple1_temp)
+                                row.update(copy_tuple2_temp)
+                                res.append(row)
+                                ii += 1
+                            else: break
+                            
+                        
+                        i += 1
                         j += 1
-                    
 
 
 
@@ -243,13 +262,13 @@ if __name__ == "__main__":
         a1.addValue(i)
     a2 = Attribute(name="a2", type=AttrTypes.INT, key=[AttrKeys.NOT_NULL])
     for i in range(1,1001):
-        a2.addValue(i)
+        a2.addValue(1)
     a3 = Attribute(name="a3", type=AttrTypes.INT, key=[AttrKeys.PRIMARY])
     for i in range(1,10001):
         a3.addValue(i)
     a4 = Attribute(name="a4", type=AttrTypes.INT, key=[AttrKeys.NOT_NULL])
     for i in range(1,10001):
-        a4.addValue(i)
+        a4.addValue(1)
 
     t1 = Table('t1', [a1, a2])
     t2 = Table('t2', [a3, a4])
@@ -262,5 +281,6 @@ if __name__ == "__main__":
 
     time1 = time.time()
     join_table = d1.join(p)
+    print(join_table.rowsize)
     time2 = time.time()
     print(time2-time1)
