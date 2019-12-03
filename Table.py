@@ -1,5 +1,6 @@
 from Attribute import *
 from Parser import *
+from Type import *
 import copy
 import time
 
@@ -12,9 +13,13 @@ class Table:
         self.name = name
         self.attributes = {}
         self.rowsize = 0
+        self.pk = []
         if attrs!=None:
             for attr in attrs:
                 self.addAttribute(attr)
+                # 如果是主键的话记录下来
+                if AttrKeys.PRIMARY in attr.key:
+                    self.pk.append(attr.name)
                 
     def __str__(self):
         res = "TableName: "+self.name+"\n"
@@ -104,7 +109,27 @@ class Table:
             else:
                 self.attributes[attrname].addValue(None)
         self.rowsize += 1
+
+    def insertTuple(self, row):
+        '''
+        在addTuple的基础上判断是否有primary key重复的问题
+        '''
+        for pk_name in self.pk:
+            assert pk_name in row.keys(), "The tuple must contain primary key"
         
+        l = None
+        for j, pk_name in enumerate(self.pk):
+            if j == 0:
+                l = [i for i,v in enumerate(self.attributes[pk_name].getValues()) if v == row[pk_name]]
+            else:
+                l2 = [i for i,v in enumerate(self.attributes[pk_name].getValues()) if v == row[pk_name]]
+                l = list(set(l).intersection(set(l2)))
+        if l != []:
+            raise Exception("Duplicate primary key value error")
+
+        self.addTuple(row)
+        
+
     def deleteTuple(self, index):
         '''
         index: integer or list
@@ -222,6 +247,9 @@ class Table:
         
 
     def update(self, conditions, row):
+        for attrname in row:
+            assert attrname not in self.pk, "Can not modify primary key"
+
         res = []
 
         for i in range(self.rowsize):
@@ -330,7 +358,8 @@ if __name__ == "__main__":
 
     t1 = Table('t1', [a1, a2, a3])
     print(t1)
-    t1.addTuple({'a1':2,'a2':'world', 'a3':0.5})
+    t1.insertTuple({'a1':2,'a2':'world', 'a3':0.5})
+    t1.insertTuple({'a1':2,'a2':'world', 'a3':0.5})
     print(t1)
     t1.updateTuple(1,{'a1':5,'a2':'foooo', 'a3':2.5})
     print(t1)
@@ -341,9 +370,9 @@ if __name__ == "__main__":
     print(t2)
     # t1.delete([[['a1',condition('inside', (1, 2))]]])
     # print(t1)
-    t1.delete()
-    print(t1)
-    t1.update([[['a1',condition('inside', (1, 2))]]], {'a1':100,'a2':'hhhhh', 'a3':3.14})
+    # t1.delete()
+    # print(t1)
+    t1.update([[['a1',condition('inside', (1, 2))]]], {'a2':'hhhhh', 'a3':3.14})
     print(t1)
 
 
