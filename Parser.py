@@ -356,7 +356,7 @@ def __parseSingleHaving(statement):
   statFunc = FuncMap[tmp[0].strip()]
   field = tmp[1].strip()
 
-  c = __parseConditionTuple(symbol, targets, ifNot)
+  c = parseConditionTuple(symbol, targets, ifNot)
   res = (field, statFunc, c)
   return res
 
