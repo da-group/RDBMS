@@ -209,6 +209,10 @@ def parseAction(string):
         res['action_type'] = "create db"
         db = string.split("create database ")[1].strip()
         res['database_name'] = db
+    elif("load database" in string):
+        res['action_type'] = "load db"
+        db = string.split("load database ")[1].strip()
+        res['database_name'] = db
     else: print("CANNOT PARSE ACTIONS")
     
     
