@@ -289,7 +289,7 @@ def __parseSingleCondition(statement):
       targets[i] = targets[i][:-1]
 
   # c = __parseConditionTuple(symbol, targets, ifNot)
-  c = (SYMBOL_DICT[symbol], targets, ifNot)
+  c = (symbol, targets, ifNot)
 
   res = (field, c)
   return res
