@@ -109,8 +109,11 @@ class Attribute(object):
 
   def getSize(self):
     return len(self.__values)
+  
+  def getValues(self):
+    return self.__values
 
-
+  
   def getIndexByCondition(self, condition):
     '''
     condition: function with arguments of attribute value
