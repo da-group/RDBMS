@@ -1,4 +1,4 @@
-
+import time
 
 
 class Node(object):
@@ -8,11 +8,11 @@ class Node(object):
   else, values[i] is a node containing keys less or equals keys[i] and larger than keys[i-1].
   '''
 
-  def __init__(self, order):
+  def __init__(self, order, isLeaf=True):
     self.order = order
     self.keys = []
     self.values = []
-    self.isLeaf = True
+    self.isLeaf = isLeaf
     self.next = None
     self.prev = None
 
@@ -69,16 +69,17 @@ class Node(object):
 
 
   def split(self):
-    left = Node(self.order)
-    right = Node(self.order)
-    left.next = right
-    left.prev = self.prev
-    if self.prev:
-      self.prev.next = left
-    right.prev = left
-    right.next = self.next
-    if self.next:
-      self.next.prev = right
+    left = Node(self.order, self.isLeaf)
+    right = Node(self.order, self.isLeaf)
+    if self.isLeaf:
+      left.next = right
+      left.prev = self.prev
+      if self.prev:
+        self.prev.next = left
+      right.prev = left
+      right.next = self.next
+      if self.next:
+        self.next.prev = right
     mid = int(self.order/2)
 
     left.keys = self.keys[:mid]
@@ -189,7 +190,8 @@ class BPlusTree(object):
 
 
 if __name__ == '__main__':
-  t = BPlusTree(4)
+  t1 = time.time()
+  t = BPlusTree(10)
   t.insert(1, 1)
   t.insert(3, 3)
   t.insert(0, 0)
@@ -199,6 +201,14 @@ if __name__ == '__main__':
   t.insert(9, 7)
   t.insert(10, 7)
   t.insert(11, 7)
+  for i in range(12, 1000000):
+    print(i)
+    t.insert(i, i)
+  t2 = time.time()
+  print(t2-t1)
   # t.delete(7, 3)
-  print(t)
-  print(t.search((3, 10)))
+  # print(t)
+  t3 = time.time()
+  t.search((3, 1000))
+  t4 = time.time()
+  print(t4-t3)
