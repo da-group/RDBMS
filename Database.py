@@ -3,6 +3,8 @@ from Attribute import *
 from Condition import *
 from Parser import *
 
+import pickle
+
 class Database():
     def __init__(self, name):
         self.name = name
@@ -16,6 +18,10 @@ class Database():
             res += "TableAttributes: "+ str(self.tables[tableName].attributes.keys())+"\n"
             res += "\n"
         return res
+
+    def saveToFile(self, path):
+        f = open(path, "wb")
+        pickle.dump(self, f)
 
     # 查看数据库内table名称
     def getTableNames(self):
@@ -33,6 +39,7 @@ class Database():
         '''
         assert tableName not in self.tables.keys(), 'Create error: The table already exists in the dataset'
         self.tables[tableName] = Table(tableName, attrs)
+
 
 
     def addTable(self, table):
@@ -158,6 +165,12 @@ if __name__ == "__main__":
 
     t1 = Table('t1', [a1, a2])
     t2 = Table('t2', [a3, a4, a5])
+
+    f1 = open("./data/t1.tb", "wb")
+    pickle.dump(t1, f1)
+    f1 = open("./data/t1.tb", "rb")
+    t1 = pickle.load(f1)
+    print(t1)
 
     d1.addTable(t1)
     d1.addTable(t2)
