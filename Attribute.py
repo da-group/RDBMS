@@ -63,13 +63,13 @@ class Attribute(object):
     '''
     if AttrKeys.NOT_NULL in self.key:
       assert v, "Not null key!"
-      assert isinstance(v, TypeDict[self.type.value]), "wrong type of value!"
+      assert isinstance(v, TypeDict[self.type.value]), "wrong type of value! "+str(v)
       self.__values.append(v)
     else:
       if v==None:
         self.__values.append(v)
       else:
-        assert isinstance(v, TypeDict[self.type.value]), "wrong type of value!"
+        assert isinstance(v, TypeDict[self.type.value]), "wrong type of value "+str(v)
         self.__values.append(v)
 
   def copyEmptyAttr(self):
