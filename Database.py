@@ -2,7 +2,6 @@ from Table import *
 from Attribute import *
 from Condition import *
 from Parser import *
-
 import pickle
 
 class Database():
@@ -10,6 +9,7 @@ class Database():
         self.name = name
         self.tables = {}    # {tablename: table}
         self.foreignKeys = {}   # { t1: [{a1:(t2,a2)}] }
+        self.filePath = "./data/"+name+".db"
 
     def __str__(self):
         res = "DatabaseName: "+self.name+"\n\n"
@@ -19,7 +19,9 @@ class Database():
             res += "\n"
         return res
 
-    def saveToFile(self, path):
+    def saveToFile(self, path = None):
+        if path is None:
+            path = self.filePath
         f = open(path, "wb")
         pickle.dump(self, f)
 
@@ -39,7 +41,6 @@ class Database():
         '''
         assert tableName not in self.tables.keys(), 'Create error: The table already exists in the dataset'
         self.tables[tableName] = Table(tableName, attrs)
-
 
 
     def addTable(self, table):
@@ -120,6 +121,7 @@ class Database():
         else:
             self.foreignKeys[t1].append({a1:(t2,a2)})
 
+
     def delForeignKey(self, t1, a1):
         assert t1 in self.foreignKeys, "Wrong table"
         for i, dic in enumerate(self.foreignKeys[t1]):
@@ -128,6 +130,7 @@ class Database():
                 break
         else:
             raise Exception("Wrong attributes")
+
 
     def showForeignKeys(self):
         return str(self.foreignKeys)
