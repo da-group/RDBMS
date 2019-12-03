@@ -221,7 +221,9 @@ class SimpleSql(object):
           elif(res["action_type"] == "create db"):
               self._createdb(res["database_name"])
               self._show()
-          
+          elif(res["action_type"] == "load db"):
+              self._load_database(res["database_name"])
+#              self._show()  
       except:
             print(traceback.format_exc())
         #print(res)
