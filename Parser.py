@@ -181,10 +181,11 @@ def parseJoins(joins):
   res = []
   for join in joins:
     _, columns = join.split(" on ")
-    l = standardize(columns.split("="))
+    l = standardize(columns.split(" "))
     for i in range(len(l)):
       l[i] = l[i].strip()
-    assert len(l)==2, "wrong format of joins "+join
+    l[1] = SYMBOL_DICT[l[1]]
+    assert len(l)==3, "wrong format of joins "+join
     res.append(l)
   return res
 
