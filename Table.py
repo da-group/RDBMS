@@ -168,7 +168,6 @@ class Table:
 
         res = []
 
-        t1 = time.time()
         # 如果有index用index
         if isinstance(attrnames, list) and len(attrnames) == 1 \
                 and self.attributes[attrnames[0]].btree is not None \
@@ -223,8 +222,6 @@ class Table:
                         break
                 if orFlag:
                     res.append(i)
-        t2 = time.time()
-        print(t2-t1)
 
         if reverse:
             res = res[::-1]
@@ -314,7 +311,7 @@ class Table:
             self.updateTuple(i, row)
 
 
-    def groupBy(self, attrnames):
+    def groupByHaving(self, attrnames, havingConditions = None):
         '''
         attrnames: list of attribute names []
         return list of tables
@@ -323,7 +320,44 @@ class Table:
             assert attrname in self.attributes.keys(), "Wrong attribute names"
         res = []
         res = self.groupByRecursion(attrnames, [self], 0)
-        return res
+
+        if havingConditions is None:
+            return res
+        else:
+            # 根据having的condition来筛选返回的table
+            new_res = []
+            for table in res:
+                orFlag = False
+                for orConds in havingConditions:
+                    andFlag = True
+                    for andconds in orConds:
+                        key, sfunc, cfunc = andconds
+
+                        s = key.split(".")
+                        if len(s) == 1:
+                            attrname = s[0]
+                        elif len(s) == 2:
+                            tablename = s[0]
+                            if tablename != self.name:
+                                continue
+                            attrname = s[1]
+                        else:
+                            raise Exception("Wrong conditions")
+                        
+                        aggregateResult = sfunc(table.attributes[attrname])
+                        # cfunc = parseConditionTuple(*cfunc)
+
+                        b = cfunc(aggregateResult)
+                        if not b:
+                            andFlag = False
+                            break
+                    if andFlag:
+                        orFlag = True
+                        break
+                if orFlag:
+                    new_res.append(table)
+            return new_res
+
 
     def groupByRecursion(self, attrnames, tables, layer):
         '''
@@ -404,33 +438,35 @@ if __name__ == "__main__":
 
 
     #===============================test2=join======================================
-    # a1 = Attribute(name="a1", type=AttrTypes.INT, key=[AttrKeys.PRIMARY])
-    # a1.addValue(1)
-    # a1.addValue(1)
-    # a1.addValue(1)
-    # a1.addValue(1)
-    # a1.addValue(2)
-    # a1.addValue(2)
-    # a2 = Attribute(name="a2", type=AttrTypes.INT, key=[AttrKeys.NOT_NULL])
-    # a2.addValue(2)
-    # a2.addValue(2)
-    # a2.addValue(3)
-    # a2.addValue(3)
-    # a2.addValue(2)
-    # a2.addValue(2)
-    # a3 = Attribute(name="a3", type=AttrTypes.INT, key=[AttrKeys.NULL])
-    # a3.addValue(3)
-    # a3.addValue(9)
-    # a3.addValue(3)
-    # a3.addValue(9)
-    # a3.addValue(3)
-    # a3.addValue(9)
-    # t1 = Table('t1', [a1, a2, a3])
-    # statement = "a1,a3"
-    # p = parseGroups(statement)
-    # groupByResult = t1.groupBy(p)
-    # for t in groupByResult:
-    #     print(t)
+    a1 = Attribute(name="a1", type=AttrTypes.INT, key=[AttrKeys.PRIMARY])
+    a1.addValue(1)
+    a1.addValue(1)
+    a1.addValue(1)
+    a1.addValue(1)
+    a1.addValue(2)
+    a1.addValue(2)
+    a2 = Attribute(name="a2", type=AttrTypes.INT, key=[AttrKeys.NOT_NULL])
+    a2.addValue(2)
+    a2.addValue(2)
+    a2.addValue(3)
+    a2.addValue(3)
+    a2.addValue(2)
+    a2.addValue(2)
+    a3 = Attribute(name="a3", type=AttrTypes.INT, key=[AttrKeys.NULL])
+    a3.addValue(3)
+    a3.addValue(9)
+    a3.addValue(3)
+    a3.addValue(9)
+    a3.addValue(3)
+    a3.addValue(9)
+    t1 = Table('t1', [a1, a2, a3])
+    statement = "a1,a3"
+    ass = parseGroups(statement)
+    # havingState = "avg(t1.a1) > 1"
+    # ph = parseHaving(havingState)
+    groupByResult = t1.groupByHaving(ass)
+    for t in groupByResult:
+        print(t)
         
 
     #============================test time====================
@@ -443,22 +479,15 @@ if __name__ == "__main__":
     # t2 = time.time()
     # print(t2-t1)
 
-    a1 = Attribute(name="a1", type=AttrTypes.INT, key=[AttrKeys.NOT_NULL])
-    for i in range(1,1001):
-        for j in range(100):
-            a1.addValue(i)
-    a2 = Attribute(name="a2", type=AttrTypes.INT, key=[AttrKeys.NOT_NULL])
-    for i in range(1,100001):
-        a2.addValue(i)
+    # a1 = Attribute(name="a1", type=AttrTypes.INT, key=[AttrKeys.NOT_NULL])
+    # for i in range(1,1001):
+    #     a1.addValue(i)
+    # a2 = Attribute(name="a2", type=AttrTypes.INT, key=[AttrKeys.NOT_NULL])
+    # for i in range(1,1001):
+    #     a2.addValue(i)
 
-    # time1 = time.time()
-    a1.buildIndex(10)
-    # time2 = time.time()
-    # print(time2-time1)
-    t1 = Table('t1', [a1, a2])
-    # time3 = time.time()
-    res = t1.select(["a1"], [[['a1',('inside', ['2', '1000'], False)]]])
-    # time4 = time.time()
+    # a1.buildIndex(10)
+    # t1 = Table('t1', [a1, a2])
+    # res = t1.select(["a1"], [[['a1',('inside', ['2', '5'], False)]]])
     # print(res)
-    # print(time4-time3)
 
