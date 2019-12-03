@@ -6,7 +6,7 @@ TypeDict = {
     'int': int,
     'float': float,
     'varchar': str,
-    'data': datetime,
+    'date': datetime,
     'INT': int,
     'FLOAT': float,
     'VARCHAR': str, 
