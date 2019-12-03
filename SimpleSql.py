@@ -19,21 +19,25 @@ class SimpleSql(object):
     self.database = None
 
 
+ 
   def _load_database(self, name):
     '''
     load from self.path
     '''
-    directory = self.path+name
-    pass
+    path = self.path+name+".db"
+    
+    with open(path,"rb") as f:
+        self.database = pickle.load(f)
+    self._show()
 
 
-  def _load_from_file(self, filename):
-    pass
 
+  def _save_database(self):
+      assert self.database != None,"NO DATABASE!"
+      path = self.path+self.database.name+".db"
+      self.database.saveToFile(path)
 
-  def _save_database(self, path):
-       self.database.saveToFile(path)
-
+ 
  
   
   def _create(self,res):
