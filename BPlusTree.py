@@ -201,14 +201,14 @@ if __name__ == '__main__':
   t.insert(9, 7)
   t.insert(10, 7)
   t.insert(11, 7)
-  for i in range(12, 1000000):
-    print(i)
-    t.insert(i, i)
+  for i in range(12, 10000):
+    for j in range(100):
+      t.insert(i, i*100+j)
   t2 = time.time()
   print(t2-t1)
   # t.delete(7, 3)
   # print(t)
   t3 = time.time()
-  t.search((3, 1000))
+  t.search((3, 10))
   t4 = time.time()
   print(t4-t3)
