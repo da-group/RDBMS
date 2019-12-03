@@ -151,7 +151,9 @@ class SimpleSql(object):
     
     
   def _createdb(self,name):
-      self.database = Database(name)
+      
+     if(self.database!= None): self._save_database()
+     self.database = Database(name)
       
       
   def _show(self):
