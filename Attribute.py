@@ -91,8 +91,6 @@ class Attribute(object):
     if isinstance(index, int):
       index = [index]
     index = sorted(index, reverse=True)
-    print(self.__values)
-    print(index)
     for i in index:
       assert i<len(self.__values) and i>=0, "out of list bounding"
       self.__values.pop(i)

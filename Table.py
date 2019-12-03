@@ -168,6 +168,7 @@ class Table:
 
         res = []
 
+        t1 = time.time()
         # 如果有index用index
         if isinstance(attrnames, list) and len(attrnames) == 1 \
                 and self.attributes[attrnames[0]].btree is not None \
@@ -222,6 +223,8 @@ class Table:
                         break
                 if orFlag:
                     res.append(i)
+        t2 = time.time()
+        print(t2-t1)
 
         if reverse:
             res = res[::-1]
@@ -447,14 +450,14 @@ if __name__ == "__main__":
     for i in range(1,100001):
         a2.addValue(i)
 
-    time1 = time.time()
+    # time1 = time.time()
     a1.buildIndex(10)
-    time2 = time.time()
-    print(time2-time1)
+    # time2 = time.time()
+    # print(time2-time1)
     t1 = Table('t1', [a1, a2])
-    time3 = time.time()
+    # time3 = time.time()
     res = t1.select(["a1"], [[['a1',('inside', ['2', '1000'], False)]]])
-    time4 = time.time()
-    print(res)
-    print(time4-time3)
+    # time4 = time.time()
+    # print(res)
+    # print(time4-time3)
 
