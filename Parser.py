@@ -215,7 +215,7 @@ def __convertToDate(s):
   return datetime.strptime(s, "%m/%d/%Y")
 
 
-def __parseConditionTuple(symbol, targets, ifNot):
+def parseConditionTuple(symbol, targets, ifNot):
   c = None
   if symbol=='in':
     target = []
@@ -288,7 +288,8 @@ def __parseSingleCondition(statement):
     if targets[i].endswith(","):
       targets[i] = targets[i][:-1]
 
-  c = __parseConditionTuple(symbol, targets, ifNot)
+  # c = __parseConditionTuple(symbol, targets, ifNot)
+  c = (SYMBOL_DICT[symbol], targets, ifNot)
 
   res = (field, c)
   return res
