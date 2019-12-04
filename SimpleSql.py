@@ -44,12 +44,16 @@ class SimpleSql(object):
       self.database.createTable(res['tablename'],res['attrs'])
       
       if("foreign_key") in res.keys():
+#          print(res["foreign_key"])
           for f in res["foreign_key"]:
-              assert len(f)==4,"Wrong foreign key"
-              self.database.addForeignKey(f[0].strip(','),f[1].strip(','),f[2].strip(','),f[3].strip(','))
+              assert len(f)==5,"Wrong foreign key"
+              self.database.addForeignKey(f[0],f[1],f[2],f[3],f[4])
 
        
       self._save_database()
+      
+
+
       
       
       
