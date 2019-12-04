@@ -82,7 +82,7 @@ def parseAction(string):
 #        print(values)
 #        print("insert")
         
-    elif("delete" in string):
+    elif(string.strip().split(" ")[0] =="delete"):
         res["action_type"] = "delete"
 #        tablename = string.split("delete from ")[1].strip()
 #        res["tablename"] = tablename
