@@ -549,18 +549,15 @@ def parse(statement):
 if __name__ == '__main__':
   statement = "select c1 from t1 where not c1 inside (2.4, 4.5) and c2 in ('true', 'dfs') or c3 >= 3.4 and c4 inside (03/04/2018, 04/05/2019)"
   
-  create = "CREATE TABLE Students (ROLL_NO int,NAME varchar NOT NULL,SUBJECT varchar, primary key(roll_No));"
+  create = "CREATE TABLE Students (ROLL_NO int,NAME varchar NOT NULL,SUBJECT varchar,primary key(roll_No));"
   create_2 = "CREATE TABLE COURSE(C_ID int,CNAME varchar,primary key(c_id));"
   alter_1 = "ALTER TABLE students ADD gender varchar"
   alter_2 = "alter table students drop gender"
   drop = "drop table students"
   insert = "INSERT INTO students(roll_no,name,subject) VALUES (1, 'Seiun', 'CS');"
-  select_1 = "SELECT class_id, AVG(score)"
-  select_2 = "select *"
-  update = "UPDATE Person SET FirstName = 'Fred',LastName = 'Andromeda'"
-  delete = "DELETE FROM Customers"
+  update = "update students set name = 'riven' where name = 'seiun'"
+  delete = "delete from students where name = 'riven'"
   index = "create index on student(roll_no)"
   foreignkey = "CREATE TABLE stu_course(index int, sid int, cid int,primary key(sid,cid), foreign key(sid) references students(roll_no) on delete cascade,foreign key(cid) references course(c_id) on delete restrict);"
-  join = "SELECT Websites.id, Websites.name, access_log.count, access_log.date FROM Websites where Websites.id=access_log.site_id;"
-  parse = parse(foreignkey)
+  parse = parse(create)
   print(parse)
