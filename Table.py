@@ -181,13 +181,11 @@ class Table:
         else:
             time1 = time.time()
             # 如果有index用index
-            print(attrnames)
-            print(len(attrnames))
-            print(conditions)
-            if isinstance(attrnames, list) and len(attrnames) == 1 \
-                    and self.attributes[attrnames[0]].btree is not None \
+            tempAttrname = conditions[0][0][0].split(".")[1]
+            if isinstance(attrnames, list) \
+                    and self.attributes[tempAttrname].btree is not None \
                     and len(conditions) == 1 and len(conditions[0]) == 1 \
-                    and conditions[0][0][0] == attrnames[0] \
+                    and tempAttrname in attrnames \
                     and conditions[0][0][1][0] in ["=","inside",">","<",">=","<="]:
                 
                 print("using index")
@@ -209,7 +207,7 @@ class Table:
                     l[1] = int(c[1][1])
                     target = tuple(l)
                     
-                res = self.attributes[attrnames[0]].getIndexWithBPlusTree(target)
+                res = self.attributes[tempAttrname].getIndexWithBPlusTree(target)
 
             else: # 没有index
                 for i in range(self.rowsize):
@@ -514,4 +512,3 @@ if __name__ == "__main__":
     # t1 = Table('t1', [a1, a2])
     # res = t1.select(["a1"], [[['a1',('inside', ['2', '5'], False)]]])
     # print(res)
-
