@@ -1,10 +1,9 @@
 import re
 from datetime import datetime
 from Condition import condition
-# from Attribute import *
-# from Table import *
-# from Database import *
-from Statistic import *
+#from Attribute import *
+#from Database import *
+#from Statistic import *
 from Type import *
 
 
@@ -41,7 +40,7 @@ def parseAction(string):
         for i in range(len(attrs)):
             attrs[i] = attrs[i].strip()
         if(len(attrs)==1 and attrs[0] == "*"):
-            attrs = ["all"]
+            attrs = "all"
         res["attrs"] = attrs
         
 #        print(attrs)
@@ -75,7 +74,8 @@ def parseAction(string):
         
             
         for i in range(len(values)):
-            values[i] = values[i].strip()
+            values[i] = values[i].strip("\'").strip()
+       
         
 
         #print(attrs)
@@ -154,7 +154,6 @@ def parseAction(string):
         ak = temp.split("primary key")[0]
         ak = ak.lstrip("(").rstrip(")").strip(',').split(",")
         primaries = temp.split("primary key")[1].strip(',').lstrip("(").rstrip(")").strip().split(',')
-        print(ak)
         
        
         
@@ -316,7 +315,8 @@ def parseConditionTuple(symbol, targets, ifNot):
     elif __isDate(target):
       target = __convertToDate(target)
     elif __isString(target):
-      target = target[1:len(target)-1]
+      print(target)
+      target = target.strip('\'')
     c = condition(SYMBOL_DICT[symbol], target, ifNot)
   elif symbol=="like":
     assert len(targets)==1, "wrong number of tokens in condition "+statement
@@ -325,9 +325,10 @@ def parseConditionTuple(symbol, targets, ifNot):
     target = target[1:len(target)-1]
     c = condition(SYMBOL_DICT[symbol], target, ifNot)
   else:
+    print(symbol)
     assert len(targets)==1, "wrong number of tokens in condition "+statement
     target = targets[0]
-    assert __isNumber(target) or __isDate(target), "wrong format of number "+statement
+    assert __isNumber(target) or __isDate(target), "wrong format of number "+target
     if __isNumber(target):
       target = float(target)
     elif __isDate(target):
@@ -548,18 +549,18 @@ def parse(statement):
 if __name__ == '__main__':
   statement = "select c1 from t1 where not c1 inside (2.4, 4.5) and c2 in ('true', 'dfs') or c3 >= 3.4 and c4 inside (03/04/2018, 04/05/2019)"
   
-  create = "CREATE TABLE Students(ROLL_NO int,NAME varchar NOT NULL,SUBJECT varchar, primary key(roll_No));"
+  create = "CREATE TABLE Students (ROLL_NO int,NAME varchar NOT NULL,SUBJECT varchar, primary key(roll_No));"
   create_2 = "CREATE TABLE COURSE(C_ID int,CNAME varchar,primary key(c_id));"
   alter_1 = "ALTER TABLE students ADD gender varchar"
   alter_2 = "alter table students drop gender"
   drop = "drop table students"
-  insert = "INSERT INTO students (roll_no,name,subject) VALUES (1, 'Seiun Seiya', 'Computer Science');"
+  insert = "INSERT INTO students(roll_no,name,subject) VALUES (1, 'Seiun', 'CS');"
   select_1 = "SELECT class_id, AVG(score)"
   select_2 = "select *"
   update = "UPDATE Person SET FirstName = 'Fred',LastName = 'Andromeda'"
   delete = "DELETE FROM Customers"
   index = "create index on student(roll_no)"
-  foreignkey = "CREATE TABLE stu_course(index int, sid int, cid int,primary key(sid,cid), foreign key(sid) references students(roll_no),foreign key(cid) references course(c_id));"
+  foreignkey = "CREATE TABLE stu_course(index int, sid int, cid int,primary key(sid,cid), foreign key(sid) references students(roll_no) on delete cascade,foreign key(cid) references course(c_id) on delete restrict);"
   join = "SELECT Websites.id, Websites.name, access_log.count, access_log.date FROM Websites where Websites.id=access_log.site_id;"
-  parse = parse(create_2)
+  parse = parse(foreignkey)
   print(parse)
