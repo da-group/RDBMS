@@ -79,6 +79,12 @@ class SimpleSql(object):
       else: conditions = None
       if 'join' in res.keys(): joins = res['join']
       else: joins = []
+      if 'groups' in res.keys(): groups = res['groups']
+      else: groups = None
+      if 'having' in res.keys(): having = res['having']
+      else: having = None
+      if 'order' in res.keys(): order = res['ordered']
+      else: order = None
       results = []
       op = "" 
 
@@ -125,6 +131,7 @@ class SimpleSql(object):
           c_list = conditions
 
           result=t.select(a_list,c_list,"temp-"+t.name)
+          print(result)
           self.database.addTable(result)
           
           if(op == ""):
@@ -148,8 +155,8 @@ class SimpleSql(object):
           else: nt2 = t2+"."+c2
           res = self.database.join([(nt1, symbol, nt2)], "temp-"+nt1+nt2)
           self.database.addTable(res)
-          m[nt1] = res.name
-          m[nt2] = res.name
+          m[t1] = res.name
+          m[t2] = res.name
 
       # if join, we assume there is only one table
       if len(m)!=0:
@@ -157,21 +164,18 @@ class SimpleSql(object):
           ret = None
           while t1 in m.keys():
               t1 = m[t1]
-          if len(attrs)==1 and attrs[0]=='*':
-              ret = self.database.getTableByName(t1).project(attrs)
-              if op=="":
-                  print(ret)
-              else:
-                  attr = ret.getAttribute(attrs[0].split(".")[-1])
-                  print(FuncMap[op](attr))
+          t1 = self.database.getTableByName(t1)
+          if attrs[0] == 'all':
+              a_list = t1.attributes.keys()
           else:
-              nattr = [ele.split(".")[-1] for ele in attr]
-              ret = self.database.getTableByName(t1).project(nattr)
-              if op=="":
-                  print(ret)
-              else:
-                  attr = ret.getAttribute(attrs[0].split(".")[-1])
-                  print(FuncMap[op](attr))
+              a_list = [ele.split(".")[-1] for ele in attrs]
+          print(a_list)
+          ret = t1.project(a_list)
+          if op=="":
+              print(ret)
+          else:
+              attr = ret.getAttribute(attrs[0].split(".")[-1])
+              print(FuncMap[op](attr))
 
       else: 
           print("aaa")
