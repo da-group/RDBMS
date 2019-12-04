@@ -85,7 +85,7 @@ class SimpleSql(object):
       else: groups = None
       if 'having' in res.keys(): having = res['having']
       else: having = None
-      if 'order' in res.keys(): order = res['ordered']
+      if 'ordered' in res.keys(): order = res['ordered']
       else: order = None
       results = []
       op = "" 
@@ -131,8 +131,10 @@ class SimpleSql(object):
                       a_list.append(a)    
                   
           c_list = conditions
-          print(a_list)
+          # print(a_list)
           result=t.select(a_list,c_list,"temp-"+t.name)
+          if order and len(tables)==1:
+              result = result.order(order)
           if groups: 
               grouped = result.groupByHaving(groups, having)
               if op == "":
@@ -187,9 +189,12 @@ class SimpleSql(object):
               elif('.' in a):
                   if(a.split('.')[0] == t.name and a.split(".")[1] in t.attributes.keys()):
                       a_list.append(a.split(".")[1])
-          print(a_list)
+          # print(a_list)
           ret = t1.project(a_list)
-          print(res.attributes.keys())
+          # print(ret)
+          if order:
+              ret = ret.order(order)
+          # print(res.attributes.keys())
           if op=="":
               print(ret)
           else:
@@ -197,7 +202,7 @@ class SimpleSql(object):
               print(FuncMap[op](attr))
 
       else: 
-          for r in results:
+          for r in results:                
               print(r)
 
       toDelete = []

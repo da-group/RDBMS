@@ -262,6 +262,21 @@ class Table:
         return table
 
 
+    def order(self, orders):
+        '''
+        orders = [[attr, isAsc]]
+        '''
+        order = orders[0]
+        attrname, isAsc = order
+        index_list = self.attributes[attrname].getSortedIndexList()
+        if not isAsc:
+            index_list = index_list[::-1]
+        res = Table("temp-order")
+        for attr in self.attributes.keys():
+            res.addAttribute(self.attributes[attr].getAttributeByIndex(index_list))
+        return res
+
+
     def delete(self, conditions=None):
         if conditions is None:
             self.deleteTuple(range(self.rowsize))

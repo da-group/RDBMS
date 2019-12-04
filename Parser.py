@@ -466,12 +466,12 @@ def parseOrdered(statement):
   for s in statements:
     s = s.strip()
     l = standardize(s.split(" "))
+    isAsc = True
     assert len(l)==1 or len(l)==2, "wrong format of order "+statement
     if len(l)==2:
       assert l[1] in ['asc', 'desc'], "wrong format of order "+statement
-    isAsc = True
-    if l[1]=="desc":
-      isAsc = False
+      if l[1]=="desc":
+        isAsc = False
     res.append((l[0], isAsc))
   return res
 
