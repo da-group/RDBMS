@@ -68,16 +68,31 @@ class SimpleSql(object):
   def _select(self, res):
       tables = res['froms']
       attrs = res['attrs']
-      conditions = res['conditions']
+      if 'conditions' in res.keys(): conditions = res['conditions']
+      else: conditions = [[]]
+      if 'join' in res.keys(): joins = res['join']
+      else: joins = []
       results = []
-      op = ""
-      
-      
-      
-      
+      op = "" 
+
+      tc_dict = {}
+      for join in joins:
+          tc1, _, tc2 = join
+          t1, c1 = tc1.split(".")
+          t2, c2 = tc2.split(".")
+          if t1 not in tc_dict.keys():
+              tc_dict[t1] = []
+          if t2 not in tc_dict.keys():
+              tc_dict[t2] = []
+          if c1 not in tc_dict[t1]:
+              tc_dict[t1].append(c1)
+          if c2 not in tc_dict[t2]:
+              tc_dict[t2].append(c2)
+
 
       for t in tables:
           assert t in self.database.tables.keys(), "No such table"
+          t = self.database.getTableByName(t)
           a_list = []
           c_list = []
           for a in attrs:
@@ -94,24 +109,72 @@ class SimpleSql(object):
               elif('.' in a):
                   if(a.split('.')[0] == t and a.split(".")[1] in t.attributes.keys()):
                       a_list.append(a.split(".")[1])
-                      
+          
+          if len(tc_dict)!=0:
+              for a in tc_dict[t.name]:
+                  if a not in a_list:
+                      a_list.append(a)    
                   
           for c in conditions:
               if(c[0] == t) :
                   c_list.append(c)
-          result=t.select(a_list,c_list)
+
+          result=t.select(a_list,c_list,"temp-"+t.name)
+          self.database.addTable(result)
           
           if(op == ""):results.append(result)
           else:
               attr = result.getAttribute(a_list[0])
               results.append(FuncMap[op](attr))
-              
-       
-        
-      print(results)
-      
-      
-      
+
+      m = {}
+      for join in joins:
+          tc1, symbol, tc2 = join
+          t1, c1 = tc1.split(".")
+          t2, c2 = tc2.split(".")
+          while t1 in m.keys():
+              t1 = m[t1]
+          while t2 in m.keys():
+              t2 = m[t2]
+          if not t1.startswith("temp-"): nt1 = "temp-"+t1+"."+c1
+          else: nt1 = t1+"."+c1
+          if not t2.startswith("temp-"): nt2 = "temp-"+t2+"."+c2
+          else: nt2 = t2+"."+c2
+          res = self.database.join((nt1, symbol, nt2), "temp-"+nt1+nt2)
+          self.database.addTable(res)
+          m[nt1] = res.name
+          m[nt2] = res.name
+
+      # if join, we assume there is only one table
+      if len(m)!=0:
+          t1 = tables[0]
+          ret = None
+          while t1 in m.keys():
+              t1 = m[t1]
+          if len(attrs)==1 and attrs[0]=='*':
+              ret = self.database.getTableByName(t1).project(attrs)
+              if op=="":
+                  print(ret)
+              else:
+                  attr = ret.getAttribute(attrs[0].split(".")[-1])
+                  print(FuncMap[op](attr))
+          else:
+              nattr = [ele.split(".")[-1] for ele in attr]
+              ret = self.database.getTableByName(t1).project(nattr)
+              if op=="":
+                  print(ret)
+              else:
+                  attr = ret.getAttribute(attrs[0].split(".")[-1])
+                  print(FuncMap[op](attr))
+
+      else: 
+          for r in results:
+              print(r)
+
+      for t in self.database.tables.keys():
+          if t.startswith("temp-"):
+              self.database.dropTable(t)
+   
       
       
       
