@@ -34,7 +34,8 @@ class Database():
 
     # 指定表名, 获取表对象
     def getTableByName(self, tableName: str):
-        assert tableName in self.tables.keys(), "The table does not exist"
+        # print(self.tables.keys())
+        assert tableName in self.tables.keys(), "The table does not exist "+tableName
         return self.tables[tableName]
 
 
