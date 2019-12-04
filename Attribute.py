@@ -48,6 +48,10 @@ class Attribute(object):
       self.btree.insert(key, value)
 
 
+  def dropIndex(self):
+    self.btree = None
+
+
   def getIndexWithBPlusTree(self, target):
     '''
     target is either int, float or tuple
