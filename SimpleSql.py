@@ -120,7 +120,7 @@ class SimpleSql(object):
               elif a == "all":
                   a_list = t.attributes.keys()
               elif('.' in a):
-                  if(a.split('.')[0] == t and a.split(".")[1] in t.attributes.keys()):
+                  if(a.split('.')[0] == t.name and a.split(".")[1] in t.attributes.keys()):
                       a_list.append(a.split(".")[1])
           
           if len(tc_dict)!=0:
@@ -130,8 +130,8 @@ class SimpleSql(object):
                   
           c_list = conditions
 
+          print(a_list)
           result=t.select(a_list,c_list,"temp-"+t.name)
-          print(result)
           self.database.addTable(result)
           
           if(op == ""):
