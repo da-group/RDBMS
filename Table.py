@@ -163,7 +163,7 @@ class Table:
             table.addAttribute(self.attributes[attrname])
         return table
 
-    def select(self, attrnames: list, conditions: list, name=None, reverse = False):
+    def select(self, attrnames: list, conditions=None, name=None, reverse = False):
         '''
         attrnames: * or list of attrnames
         return a table containing satisfied rows and their attributes
@@ -175,60 +175,63 @@ class Table:
 
         res = []
 
-        # 如果有index用index
-        if isinstance(attrnames, list) and len(attrnames) == 1 \
-                and self.attributes[attrnames[0]].btree is not None \
-                and len(conditions) == 1 and len(conditions[0]) == 1 \
-                and conditions[0][0][0] == attrnames[0] \
-                and conditions[0][0][1][0] in ["=","inside",">","<",">=","<="]:
-            
-            c = conditions[0][0][1]
-            if c[0] == "=":
-                target = int(c[1][0])
-            elif c[0] == ">":
-                target = (int(c[1][0])+1, float("inf"))
-            elif c[0] == "<":
-                target = (float("-inf"), int(c[1][0])-1)
-            elif c[0] == ">=":
-                target = (int(c[1][0]), float("inf"))
-            elif c[0] == "<=":
-                target = (float("-inf"), int(c[1][0]))
-            elif c[0] == "inside":
-                l = c[1]
-                l[0] = int(c[1][0])
-                l[1] = int(c[1][1])
-                target = tuple(l)
+        if conditions is None:
+            res = range(self.rowsize)
+        else:
+            # 如果有index用index
+            if isinstance(attrnames, list) and len(attrnames) == 1 \
+                    and self.attributes[attrnames[0]].btree is not None \
+                    and len(conditions) == 1 and len(conditions[0]) == 1 \
+                    and conditions[0][0][0] == attrnames[0] \
+                    and conditions[0][0][1][0] in ["=","inside",">","<",">=","<="]:
                 
-            res = self.attributes[attrnames[0]].getIndexWithBPlusTree(target)
+                c = conditions[0][0][1]
+                if c[0] == "=":
+                    target = int(c[1][0])
+                elif c[0] == ">":
+                    target = (int(c[1][0])+1, float("inf"))
+                elif c[0] == "<":
+                    target = (float("-inf"), int(c[1][0])-1)
+                elif c[0] == ">=":
+                    target = (int(c[1][0]), float("inf"))
+                elif c[0] == "<=":
+                    target = (float("-inf"), int(c[1][0]))
+                elif c[0] == "inside":
+                    l = c[1]
+                    l[0] = int(c[1][0])
+                    l[1] = int(c[1][1])
+                    target = tuple(l)
+                    
+                res = self.attributes[attrnames[0]].getIndexWithBPlusTree(target)
 
-        else: # 没有index
-            for i in range(self.rowsize):
-                orFlag = False
-                for orConds in conditions:
-                    andFlag = True
-                    for andconds in orConds:
-                        key, func = andconds
-                        func = parseConditionTuple(*func)
-                        s = key.split(".")
-                        if len(s) == 1:
-                            attrname = s[0]
-                        elif len(s) == 2:
-                            tablename = s[0]
-                            if tablename != self.name:
-                                continue
-                            attrname = s[1]
-                        else:
-                            raise Exception("Wrong conditions")
-                        
-                        b = func(self.attributes[attrname][i])
-                        if not b:
-                            andFlag = False
+            else: # 没有index
+                for i in range(self.rowsize):
+                    orFlag = False
+                    for orConds in conditions:
+                        andFlag = True
+                        for andconds in orConds:
+                            key, func = andconds
+                            func = parseConditionTuple(*func)
+                            s = key.split(".")
+                            if len(s) == 1:
+                                attrname = s[0]
+                            elif len(s) == 2:
+                                tablename = s[0]
+                                if tablename != self.name:
+                                    continue
+                                attrname = s[1]
+                            else:
+                                raise Exception("Wrong conditions")
+                            
+                            b = func(self.attributes[attrname][i])
+                            if not b:
+                                andFlag = False
+                                break
+                        if andFlag:
+                            orFlag = True
                             break
-                    if andFlag:
-                        orFlag = True
-                        break
-                if orFlag:
-                    res.append(i)
+                    if orFlag:
+                        res.append(i)
 
         if reverse:
             res = res[::-1]
