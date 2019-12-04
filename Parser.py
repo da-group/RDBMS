@@ -559,7 +559,7 @@ if __name__ == '__main__':
   update = "UPDATE Person SET FirstName = 'Fred',LastName = 'Andromeda'"
   delete = "DELETE FROM Customers"
   index = "create index on student(roll_no)"
-  foreignkey = "CREATE TABLE stu_course(index int, sid int, cid int,primary key(sid,cid), foreign key(sid) references student(roll_no),foreign key(cid) references course(c_id));"
+  foreignkey = "CREATE TABLE stu_course(index int, sid int, cid int,primary key(sid,cid), foreign key(sid) references students(roll_no),foreign key(cid) references course(c_id));"
   join = "SELECT Websites.id, Websites.name, access_log.count, access_log.date FROM Websites where Websites.id=access_log.site_id;"
   parse = parse(create_2)
   print(parse)
