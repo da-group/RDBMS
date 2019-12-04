@@ -120,7 +120,7 @@ class SimpleSql(object):
               elif a in t.attributes.keys():
                   a_list.append(a)
               elif a == "all":
-                  a_list = t.attributes.keys()
+                  a_list = [ele for ele in t.attributes.keys()]
               elif('.' in a):
                   if(a.split('.')[0] == t.name and a.split(".")[1] in t.attributes.keys()):
                       a_list.append(a.split(".")[1])
@@ -178,8 +178,7 @@ class SimpleSql(object):
 
       else: 
           for r in results:
-              pass
-              # print(r)
+              print(r)
 
       toDelete = []
       for t in self.database.tables.keys():
@@ -307,6 +306,9 @@ class SimpleSql(object):
               assert self.database != None,"NO DATABASE!"
               self._delete(res)
           elif(res["action_type"] == "create index"):
+              assert self.database != None,"NO DATABASE!"
+              self._createindex(res)
+          elif(res["action_type"] == "drop index"):
               assert self.database != None,"NO DATABASE!"
               self._createindex(res)
               

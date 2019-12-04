@@ -239,7 +239,9 @@ class Table:
                     if orFlag:
                         res.append(i)
             time2 = time.time()
+            print()
             print(self.name+" select time: "+str(time2-time1))
+            print()
 
         if reverse:
             res = res[::-1]
