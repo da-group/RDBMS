@@ -217,7 +217,13 @@ def parseAction(string):
         
 
     elif("drop index" in string):
-        print("drop index")
+        res['action_type'] ="drop index"
+        temp = string.split("drop index ")[1]
+        attr = re.findall(r'[(](.*?)[)]',string)[0].strip()
+        tablename = temp.replace(re.findall(r'\(.*?\)',temp)[0],'')
+        
+        res['tablename'] = tablename
+        res['attr'] = attr
     elif("create database" in string):
         res['action_type'] = "create db"
         db = string.split("create database ")[1].strip()
