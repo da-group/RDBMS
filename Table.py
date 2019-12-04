@@ -36,7 +36,7 @@ class Table:
 
 
     def getAttribute(self, attrname: str):
-        assert attrname in self.attributes.keys, "Wrong attribute name"
+        assert attrname in self.attributes.keys(), "Wrong attribute name"
         return self.attributes[attrname]
 
     def getRowSize(self):

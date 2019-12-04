@@ -112,7 +112,7 @@ class SimpleSql(object):
               if(re.fullmatch(r'.{3}\(.*\)',a) or re.fullmatch(r'.{5}\(.*\)',a)):
                   assert len(attrs)==1,"invalid nums of attributes"
                   attr =re.findall(r'[(](.*?)[)]',a)[0].strip()
-                  a_list.append(attr)
+                  a_list.append(attr.split(".")[-1])
                   op = a.replace(re.findall(r'\(.*?\)',a)[0],'')
                   
               elif a in t.attributes.keys():
@@ -129,8 +129,6 @@ class SimpleSql(object):
                       a_list.append(a)    
                   
           c_list = conditions
-
-          print(a_list)
           result=t.select(a_list,c_list,"temp-"+t.name)
           self.database.addTable(result)
           
@@ -138,7 +136,7 @@ class SimpleSql(object):
               results.append(result)
           else:
               attr = result.getAttribute(a_list[0])
-              results.append(FuncMap[op](attr))
+              return 
 
       m = {}
       for join in joins:
@@ -169,7 +167,6 @@ class SimpleSql(object):
               a_list = t1.attributes.keys()
           else:
               a_list = [ele.split(".")[-1] for ele in attrs]
-          print(a_list)
           ret = t1.project(a_list)
           if op=="":
               print(ret)
