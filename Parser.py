@@ -131,7 +131,7 @@ def parseAction(string):
                         f = f.replace("on delete restrict",'')
                     
                 f_key = []
-                f_key.append(tablename)
+                f_key.append(tablename.strip(',').strip())
                 splited = f.split('references')
                 
                 a1 = re.findall(r'[(](.*?)[)]',splited[0])[0]
@@ -140,9 +140,9 @@ def parseAction(string):
                 rp = re.findall(r'\(.*?\)',splited[1])[0]
                 t2 = splited[1].replace(rp,'').strip(")").strip()
                 
-                f_key.append(a1)
-                f_key.append(t2)
-                f_key.append(a2)
+                f_key.append(a1.strip(',').strip())
+                f_key.append(t2.strip(',').strip())
+                f_key.append(a2.strip(',').strip())
                 
                 f_key.append(constraint)
 #                print(f_key)
