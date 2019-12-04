@@ -172,7 +172,9 @@ class Table:
         #判断attrnames是不是都在该表内
         if isinstance(attrnames, list):
             for attrname in attrnames:
-                assert attrname in self.attributes.keys(), "Select non-existent attribute"
+                if attrname not in self.attributes.keys():
+                    attrnames.remove(attrname)
+        assert len(attrnames)>0, "invalid attrnames"
 
         res = []
 

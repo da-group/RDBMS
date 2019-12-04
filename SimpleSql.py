@@ -131,6 +131,7 @@ class SimpleSql(object):
                       a_list.append(a)    
                   
           c_list = conditions
+          print(a_list)
           result=t.select(a_list,c_list,"temp-"+t.name)
           if groups: 
               grouped = result.groupByHaving(groups, having)
@@ -171,15 +172,28 @@ class SimpleSql(object):
           while t1 in m.keys():
               t1 = m[t1]
           t1 = self.database.getTableByName(t1)
-          if attrs[0] == 'all':
-              a_list = t1.attributes.keys()
-          else:
-              a_list = [ele.split(".")[-1] for ele in attrs]
+          a_list = []
+          for a in attrs:
+              if(re.fullmatch(r'.{3}\(.*\)',a) or re.fullmatch(r'.{5}\(.*\)',a)):
+                  assert len(attrs)==1,"invalid nums of attributes"
+                  attr =re.findall(r'[(](.*?)[)]',a)[0].strip()
+                  a_list.append(attr.split(".")[-1])
+                  op = a.replace(re.findall(r'\(.*?\)',a)[0],'')
+                  
+              elif a in t1.attributes.keys():
+                  a_list.append(a)
+              elif a == "all":
+                  a_list = [ele for ele in t1.attributes.keys()]
+              elif('.' in a):
+                  if(a.split('.')[0] == t.name and a.split(".")[1] in t.attributes.keys()):
+                      a_list.append(a.split(".")[1])
+          print(a_list)
           ret = t1.project(a_list)
+          print(res.attributes.keys())
           if op=="":
               print(ret)
           else:
-              attr = ret.getAttribute(attrs[0].split(".")[-1])
+              attr = ret.getAttribute(a_list[0].split(".")[-1])
               print(FuncMap[op](attr))
 
       else: 
@@ -326,7 +340,13 @@ class SimpleSql(object):
               self._load_database(res["database_name"])
 #              self._show()  
       except:
-            print(traceback.format_exc())
+          toDelete = []
+          for t in self.database.tables.keys():
+              if t.startswith("temp-"):
+                  toDelete.append(t)
+          for tname in toDelete:
+              self.database.dropTable(tname)
+          print(traceback.format_exc())
         #print(res)
  
 

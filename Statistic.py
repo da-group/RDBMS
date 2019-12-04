@@ -38,10 +38,7 @@ def maxOp(attr):
 
 
 def countOp(attr):
-  counter = Counter()
-  for i in range(attr.getSize()):
-    counter[attr[i]] += 1
-  return len(counter)
+  return attr.getSize()
 
 
 

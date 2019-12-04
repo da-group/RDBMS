@@ -47,7 +47,7 @@ class Database():
 
 
     def addTable(self, table):
-        assert table.name not in self.tables.keys(), 'Add error: The table already exists in the dataset'
+        assert table.name not in self.tables.keys(), 'Add error: The table already exists in the dataset '+table.name
         self.tables[table.name] = table
 
 
@@ -85,7 +85,24 @@ class Database():
             # 如果两个表tuple数量差距十分大e.g |a1|<lg(|a2|) 用nested-loop
             size1 = t1.attributes[attrName1].getSize()
             size2 = t2.attributes[attrName2].getSize()
+
+
+            attrsAfterJoin = []
+            for attrname in t1.attributes:
+                attrsAfterJoin.append(t1.attributes[attrname].copyEmptyAttr())
+            for attrname in t2.attributes:
+                if attrname != attrName2:
+                    attrsAfterJoin.append(t2.attributes[attrname].copyEmptyAttr())
+
+            table = None
+            if name is not None:
+                table = Table(name, attrsAfterJoin)
+            else:
+                table = Table('join_result', attrsAfterJoin)
+
+            time1 = time.time()
             if size1 < math.log2(size2) or size2 < math.log2(size1) or funcName != "equal":
+            # if True:
                 # join using nested-loop
                 for i in range(t1.rowsize):
                     # 获取第一张表的tuple
@@ -103,7 +120,8 @@ class Database():
                             row = {}
                             row.update(tuple1)
                             row.update(tuple2)
-                            res.append(row)
+                            # res.append(row)
+                            table.addTuple(row)
             else:
                 '''
                 join using merge-scan:
@@ -126,7 +144,8 @@ class Database():
                         row = {}
                         row.update(tuple1)
                         row.update(copy_tuple2)
-                        res.append(row)
+                        # res.append(row)
+                        table.addTuple(row)
 
                         jj = j+1
                         while jj<len(sortedIndices2):
@@ -137,7 +156,8 @@ class Database():
                                 row = {}
                                 row.update(tuple1)
                                 row.update(copy_tuple2_temp)
-                                res.append(row)
+                                # res.append(row)
+                                table.addTuple(row)
                                 jj += 1
                             else: break
                         
@@ -150,31 +170,18 @@ class Database():
                                 row = {}
                                 row.update(tuple1_temp)
                                 row.update(copy_tuple2_temp)
-                                res.append(row)
+                                # res.append(row)
+                                table.addTuple(row)
+
                                 ii += 1
                             else: break
                             
-                        
                         i += 1
                         j += 1
 
+            time2 = time.time()
+            print("join time on "+t1.name+" "+t2.name+" "+str(time2-time1))
 
-
-            attrsAfterJoin = []
-            for attrname in t1.attributes:
-                attrsAfterJoin.append(t1.attributes[attrname].copyEmptyAttr())
-            for attrname in t2.attributes:
-                if attrname != attrName2:
-                    attrsAfterJoin.append(t2.attributes[attrname].copyEmptyAttr())
-
-            table = None
-            if name is not None:
-                table = Table(name, attrsAfterJoin)
-            else:
-                table = Table('join_result', attrsAfterJoin)
-                
-            for r in res:
-                table.addTuple(r)
             return table
 
 
