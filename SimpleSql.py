@@ -250,7 +250,16 @@ class SimpleSql(object):
   def _createindex(self,res):
       table = self.database.getTableByName(res['tablename'])
       attr = table.getAttribute(res['attr'])
+      assert attr.getType() == "int","CANNOT CREATE INDEX ON SUCH TYPE"
       attr.buildIndex(10)
+      
+  def _dropindex(self,res):
+      table = self.database.getTableByName(res['tablename'])
+      attr = table.getAttribute(res['attr'])
+      attr.dropIndex()
+ 
+      
+      
  
       
       
