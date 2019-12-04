@@ -118,6 +118,18 @@ def parseAction(string):
             temp = no_fk
             for f in fk:
                 f = f.strip()
+                constraint = "set null"
+                if("on delete" in f):
+                    if("cascade" in f):
+                        constraint = "cascade"
+                        f = f.replace("on delete cascade",'')
+                    elif("set null" in f):
+                        constraint = "set null"
+                        f = f.replace("on delete set null",'')
+                    elif("restrict" in f):
+                        constraint = "restrict"
+                        f = f.replace("on delete restrict",'')
+                    
                 f_key = []
                 f_key.append(tablename)
                 splited = f.split('references')
@@ -131,6 +143,8 @@ def parseAction(string):
                 f_key.append(a1)
                 f_key.append(t2)
                 f_key.append(a2)
+                
+                f_key.append(constraint)
 #                print(f_key)
                 res['foreign_key'].append(f_key)
 
