@@ -41,7 +41,7 @@ def parseAction(string):
         for i in range(len(attrs)):
             attrs[i] = attrs[i].strip()
         if(len(attrs)==1 and attrs[0] == "*"):
-            attrs = "all"
+            attrs = ["all"]
         res["attrs"] = attrs
         
 #        print(attrs)

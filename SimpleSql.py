@@ -64,12 +64,15 @@ class SimpleSql(object):
   def _drop(self, res):
       self.database.dropTable(res['tablename'])
       self._save_database()
-      
+
+
+
   def _select(self, res):
+      print(res)
       tables = res['froms']
       attrs = res['attrs']
       if 'conditions' in res.keys(): conditions = res['conditions']
-      else: conditions = [[]]
+      else: conditions = None
       if 'join' in res.keys(): joins = res['join']
       else: joins = []
       results = []
@@ -93,6 +96,8 @@ class SimpleSql(object):
       for t in tables:
           assert t in self.database.tables.keys(), "No such table"
           t = self.database.getTableByName(t)
+          # print(t.rowsize)
+          # print(t.getTuple(0))
           a_list = []
           c_list = []
           for a in attrs:
@@ -102,9 +107,11 @@ class SimpleSql(object):
                   a_list.append(attr)
                   op = a.replace(re.findall(r'\(.*?\)',a)[0],'')
                   
-              elif(a in t.attributes.keys()):
+              elif a in t.attributes.keys():
                   a_list.append(a)
-              elif a == "*":
+              elif a == "all":
+                  print(t)
+                  print(t.rowsize)
                   a_list = t.attributes.keys()
               elif('.' in a):
                   if(a.split('.')[0] == t and a.split(".")[1] in t.attributes.keys()):
@@ -115,14 +122,13 @@ class SimpleSql(object):
                   if a not in a_list:
                       a_list.append(a)    
                   
-          for c in conditions:
-              if(c[0] == t) :
-                  c_list.append(c)
+          c_list = conditions
 
           result=t.select(a_list,c_list,"temp-"+t.name)
           self.database.addTable(result)
           
-          if(op == ""):results.append(result)
+          if(op == ""):
+              results.append(result)
           else:
               attr = result.getAttribute(a_list[0])
               results.append(FuncMap[op](attr))
@@ -168,12 +174,16 @@ class SimpleSql(object):
                   print(FuncMap[op](attr))
 
       else: 
+          print("aaa")
           for r in results:
               print(r)
 
+      toDelete = []
       for t in self.database.tables.keys():
           if t.startswith("temp-"):
-              self.database.dropTable(t)
+              toDelete.append(t)
+      for tname in toDelete:
+          self.database.dropTable(tname)
    
       
       
