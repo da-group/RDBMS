@@ -73,7 +73,6 @@ class SimpleSql(object):
 
 
   def _select(self, res):
-      print(res)
       time1 = time.time()
       tables = res['froms']
       attrs = res['attrs']
@@ -133,7 +132,6 @@ class SimpleSql(object):
           c_list = conditions
           result=t.select(a_list,c_list,"temp-"+t.name)
           if groups: 
-              print(having)
               grouped = result.groupByHaving(groups, having)
               if op == "":
                   results.extend(grouped)
@@ -243,6 +241,7 @@ class SimpleSql(object):
       
      if(self.database!= None): self._save_database()
      self.database = Database(name)
+     self._save_database()
       
       
   def _show(self):

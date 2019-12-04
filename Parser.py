@@ -212,9 +212,6 @@ def parseAction(string):
         res['tablename'] = tablename
         res['attr'] = attr
         
-        print(attr)
-        print(tablename)
-        
 
     elif("drop index" in string):
         res['action_type'] ="drop index"
@@ -321,7 +318,6 @@ def parseConditionTuple(symbol, targets, ifNot):
     elif __isDate(target):
       target = __convertToDate(target)
     elif __isString(target):
-      print(target)
       target = target.strip('\'')
     c = condition(SYMBOL_DICT[symbol], target, ifNot)
   elif symbol=="like":
@@ -331,7 +327,6 @@ def parseConditionTuple(symbol, targets, ifNot):
     target = target[1:len(target)-1]
     c = condition(SYMBOL_DICT[symbol], target, ifNot)
   else:
-    print(symbol)
     assert len(targets)==1, "wrong number of tokens in condition "+statement
     target = targets[0]
     assert __isNumber(target) or __isDate(target), "wrong format of number "+target
@@ -564,7 +559,6 @@ if __name__ == '__main__':
   update = "update students set name = 'riven' where name = 'seiun'"
   delete = "delete from students where name = 'riven'"
   index = "create index on students(roll_no)"
-  dropindex = "drop index student(roll_no)"
   foreignkey = "CREATE TABLE stu_course(index int, sid int, cid int,primary key(sid,cid), foreign key(sid) references students(roll_no) on delete cascade,foreign key(cid) references course(c_id) on delete restrict);"
   parse = parse(create)
   print(parse)
