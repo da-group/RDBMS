@@ -131,7 +131,7 @@ def parseAction(string):
                         f = f.replace("on delete restrict",'')
                     
                 f_key = []
-                f_key.append(tablename)
+                f_key.append(tablename.strip(',').strip())
                 splited = f.split('references')
                 
                 a1 = re.findall(r'[(](.*?)[)]',splited[0])[0]
@@ -140,9 +140,9 @@ def parseAction(string):
                 rp = re.findall(r'\(.*?\)',splited[1])[0]
                 t2 = splited[1].replace(rp,'').strip(")").strip()
                 
-                f_key.append(a1)
-                f_key.append(t2)
-                f_key.append(a2)
+                f_key.append(a1.strip(',').strip())
+                f_key.append(t2.strip(',').strip())
+                f_key.append(a2.strip(',').strip())
                 
                 f_key.append(constraint)
 #                print(f_key)
@@ -559,7 +559,7 @@ if __name__ == '__main__':
   update = "UPDATE Person SET FirstName = 'Fred',LastName = 'Andromeda'"
   delete = "DELETE FROM Customers"
   index = "create index on student(roll_no)"
-  foreignkey = "CREATE TABLE stu_course(index int, sid int, cid int,primary key(sid,cid), foreign key(sid) references student(roll_no),foreign key(cid) references course(c_id));"
+  foreignkey = "CREATE TABLE stu_course(index int, sid int, cid int,primary key(sid,cid), foreign key(sid) references students(roll_no),foreign key(cid) references course(c_id));"
   join = "SELECT Websites.id, Websites.name, access_log.count, access_log.date FROM Websites where Websites.id=access_log.site_id;"
   parse = parse(create_2)
   print(parse)
