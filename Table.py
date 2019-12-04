@@ -179,12 +179,18 @@ class Table:
         if conditions is None:
             res = range(self.rowsize)
         else:
+            time1 = time.time()
             # 如果有index用index
+            print(attrnames)
+            print(len(attrnames))
+            print(conditions)
             if isinstance(attrnames, list) and len(attrnames) == 1 \
                     and self.attributes[attrnames[0]].btree is not None \
                     and len(conditions) == 1 and len(conditions[0]) == 1 \
                     and conditions[0][0][0] == attrnames[0] \
                     and conditions[0][0][1][0] in ["=","inside",">","<",">=","<="]:
+                
+                print("using index")
                 
                 c = conditions[0][0][1]
                 if c[0] == "=":
@@ -234,6 +240,8 @@ class Table:
                             break
                     if orFlag:
                         res.append(i)
+            time2 = time.time()
+            print(self.name+" select time: "+str(time2-time1))
 
         if reverse:
             res = res[::-1]

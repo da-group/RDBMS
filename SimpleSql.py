@@ -1,4 +1,5 @@
 import os
+import time
 import traceback
 from Parser import parseCondition
 from Parser import parse
@@ -7,6 +8,7 @@ from Table import *
 from datetime import datetime
 from Statistic import *
 import re
+
 
 class SimpleSql(object):
   '''
@@ -72,6 +74,7 @@ class SimpleSql(object):
 
   def _select(self, res):
       print(res)
+      time1 = time.time()
       tables = res['froms']
       attrs = res['attrs']
       if 'conditions' in res.keys(): conditions = res['conditions']
@@ -135,7 +138,7 @@ class SimpleSql(object):
               results.append(result)
           else:
               attr = result.getAttribute(a_list[0])
-              return 
+              results.append(FuncMap[op](attr))
 
       m = {}
       for join in joins:
@@ -174,9 +177,9 @@ class SimpleSql(object):
               print(FuncMap[op](attr))
 
       else: 
-          print("aaa")
           for r in results:
-              print(r)
+              pass
+              # print(r)
 
       toDelete = []
       for t in self.database.tables.keys():
@@ -184,6 +187,9 @@ class SimpleSql(object):
               toDelete.append(t)
       for tname in toDelete:
           self.database.dropTable(tname)
+
+      time2 = time.time()
+      # print("time cost: "+str(time2-time1))
    
       
       
