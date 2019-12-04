@@ -132,13 +132,20 @@ class SimpleSql(object):
                   
           c_list = conditions
           result=t.select(a_list,c_list,"temp-"+t.name)
-          self.database.addTable(result)
-          
-          if(op == ""):
-              results.append(result)
+          if groups: 
+              print(having)
+              grouped = result.groupByHaving(groups, having)
+              if op == "":
+                  results.extend(grouped)
+              else:
+                  results.extend([FuncMap[op](result.getAttribute(a_list[0])) for result in grouped])
           else:
-              attr = result.getAttribute(a_list[0])
-              results.append(FuncMap[op](attr))
+              self.database.addTable(result)
+              if(op == ""):
+                  results.append(result)
+              else:
+                  attr = result.getAttribute(a_list[0])
+                  results.append(FuncMap[op](attr))
 
       m = {}
       for join in joins:

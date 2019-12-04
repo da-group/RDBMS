@@ -3,7 +3,7 @@ from datetime import datetime
 from Condition import condition
 #from Attribute import *
 #from Database import *
-#from Statistic import *
+from Statistic import *
 from Type import *
 
 

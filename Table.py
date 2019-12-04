@@ -182,7 +182,8 @@ class Table:
             time1 = time.time()
             # 如果有index用index
             tempAttrname = conditions[0][0][0].split(".")[1]
-            if isinstance(attrnames, list) \
+            tableName = conditions[0][0][0].split(".")[0]
+            if isinstance(attrnames, list) and tableName == self.name \
                     and self.attributes[tempAttrname].btree is not None \
                     and len(conditions) == 1 and len(conditions[0]) == 1 \
                     and tempAttrname in attrnames \

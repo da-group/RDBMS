@@ -73,8 +73,6 @@ class Database():
             s1 = joinParam[0].split('.')
             funcName = joinParam[1]
             s2 = joinParam[2].split('.')
-            print(s1)
-            print(s2)
             t1 = self.getTableByName(s1[0])
             t2 = self.getTableByName(s2[0])
             attrName1 = s1[1]
