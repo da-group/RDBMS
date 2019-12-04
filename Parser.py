@@ -1,9 +1,9 @@
 import re
 from datetime import datetime
 from Condition import condition
-from Attribute import *
-from Table import *
-from Database import *
+# from Attribute import *
+# from Table import *
+# from Database import *
 from Statistic import *
 from Type import *
 
@@ -360,7 +360,7 @@ def __parseSingleCondition(statement):
       targets[i] = targets[i][:-1]
 
   # c = __parseConditionTuple(symbol, targets, ifNot)
-  c = (SYMBOL_DICT[symbol], targets, ifNot)
+  c = (symbol, targets, ifNot)
 
   res = (field, c)
   return res

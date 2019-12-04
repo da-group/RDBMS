@@ -42,15 +42,13 @@ class SimpleSql(object):
   
   def _create(self,res):
       self.database.createTable(res['tablename'],res['attrs'])
-      
+      print(res['foreign_key'])
       if("foreign_key") in res.keys():
           for f in res["foreign_key"]:
               assert len(f)==4,"Wrong foreign key"
-              self.database.addForeignKey(f[0].strip(','),f[1].strip(','),f[2].strip(','),f[3].strip(','))
-
-       
+              self.database.addForeignKey(f[0],f[1],f[2],f[3])
+              
       self._save_database()
-      
       
       
   def _alter(self,res):
@@ -64,15 +62,13 @@ class SimpleSql(object):
   def _drop(self, res):
       self.database.dropTable(res['tablename'])
       self._save_database()
-
-
+      
 
   def _select(self, res):
-      print(res)
       tables = res['froms']
       attrs = res['attrs']
       if 'conditions' in res.keys(): conditions = res['conditions']
-      else: conditions = None
+      else: conditions = [[]]
       if 'join' in res.keys(): joins = res['join']
       else: joins = []
       results = []
@@ -105,9 +101,9 @@ class SimpleSql(object):
                   a_list.append(attr)
                   op = a.replace(re.findall(r'\(.*?\)',a)[0],'')
                   
-              elif a in t.attributes.keys():
+              elif(a in t.attributes.keys()):
                   a_list.append(a)
-              elif a == "all":
+              elif a == "*":
                   a_list = t.attributes.keys()
               elif('.' in a):
                   if(a.split('.')[0] == t and a.split(".")[1] in t.attributes.keys()):
@@ -118,13 +114,14 @@ class SimpleSql(object):
                   if a not in a_list:
                       a_list.append(a)    
                   
-          c_list = conditions
+          for c in conditions:
+              if(c[0] == t) :
+                  c_list.append(c)
 
           result=t.select(a_list,c_list,"temp-"+t.name)
           self.database.addTable(result)
           
-          if(op == ""):
-              results.append(result)
+          if(op == ""):results.append(result)
           else:
               attr = result.getAttribute(a_list[0])
               results.append(FuncMap[op](attr))
@@ -142,7 +139,7 @@ class SimpleSql(object):
           else: nt1 = t1+"."+c1
           if not t2.startswith("temp-"): nt2 = "temp-"+t2+"."+c2
           else: nt2 = t2+"."+c2
-          res = self.database.join([(nt1, symbol, nt2)], "temp-"+nt1+nt2)
+          res = self.database.join((nt1, symbol, nt2), "temp-"+nt1+nt2)
           self.database.addTable(res)
           m[nt1] = res.name
           m[nt2] = res.name
@@ -170,17 +167,12 @@ class SimpleSql(object):
                   print(FuncMap[op](attr))
 
       else: 
-          print("aaa")
           for r in results:
               print(r)
 
-      toDelete = []
       for t in self.database.tables.keys():
           if t.startswith("temp-"):
-              toDelete.append(t)
-      for tname in toDelete:
-          self.database.dropTable(tname)
-   
+              self.database.dropTable(t)
       
       
       

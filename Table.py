@@ -1,5 +1,6 @@
 from Attribute import *
 from Parser import *
+from Parser import parseConditionTuple
 from Type import *
 import copy
 import time
@@ -211,7 +212,8 @@ class Table:
                         andFlag = True
                         for andconds in orConds:
                             key, func = andconds
-                            func = parseConditionTuple(*func)
+                            a, b, c = func
+                            func = parseConditionTuple(a, b, c)
                             s = key.split(".")
                             if len(s) == 1:
                                 attrname = s[0]
