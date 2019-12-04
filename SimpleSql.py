@@ -57,18 +57,17 @@ class SimpleSql(object):
       
       
       
-  def _alter(self,res):
+   def _alter(self,res):
       if(res["action_type"] == "alter add"):
           table = self.database.getTableByName(res['tablename'])
           table.addAttribute(res['attr'])
       elif(res["action_type"] == "alter drop"):
           table = self.database.getTableByName(res['tablename'])
           table.deleteAttribute(res['attr'])
-      self.save_database()
+      self._save_database()
   def _drop(self, res):
       self.database.dropTable(res['tablename'])
       self._save_database()
-
 
 
   def _select(self, res):
@@ -246,7 +245,7 @@ class SimpleSql(object):
       table = self.database.getTableByName(res['tablename'])
       attr = table.getAttribute(res['attr'])
       attr.buildIndex(10)
-      self._save_database()
+ 
       
       
 
