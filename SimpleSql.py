@@ -8,6 +8,7 @@ from Table import *
 from datetime import datetime
 from Statistic import *
 import re
+import readline
 
 
 class SimpleSql(object):
