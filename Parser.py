@@ -557,7 +557,8 @@ if __name__ == '__main__':
   insert = "INSERT INTO students(roll_no,name,subject) VALUES (1, 'Seiun', 'CS');"
   update = "update students set name = 'riven' where name = 'seiun'"
   delete = "delete from students where name = 'riven'"
-  index = "create index on student(roll_no)"
+  index = "create index on students(roll_no)"
+  dropindex = "drop index student(roll_no)"
   foreignkey = "CREATE TABLE stu_course(index int, sid int, cid int,primary key(sid,cid), foreign key(sid) references students(roll_no) on delete cascade,foreign key(cid) references course(c_id) on delete restrict);"
   parse = parse(create)
   print(parse)
