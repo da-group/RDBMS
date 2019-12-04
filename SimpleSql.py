@@ -57,7 +57,7 @@ class SimpleSql(object):
       
       
       
-   def _alter(self,res):
+  def _alter(self,res):
       if(res["action_type"] == "alter add"):
           table = self.database.getTableByName(res['tablename'])
           table.addAttribute(res['attr'])
