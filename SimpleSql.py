@@ -197,7 +197,9 @@ class SimpleSql(object):
       table = self.database.getTableByName(res['tablename'])
 #      print(table.attributes.keys())
 #      print(res['attrs_values'].keys())
+      
       for key in res['attrs_values'].keys():
+          res['attrs_values'][key] = res['attrs_values'][key].strip().strip("\'")
           a_type = table.attributes[key].getType().lower()
           
           if(a_type == "int"):
@@ -206,8 +208,8 @@ class SimpleSql(object):
               res['attrs_values'][key] = float(res['attrs_values'][key])
           elif(a_type == "date"):
               res['attrs_values'][key] = datetime.strptime(res['attrs_values'][key])
-        
-      table.addTuple(res['attrs_values'])
+      print(res['attrs_values'])  
+      table.insertTuple(res['attrs_values'])
       print(table)
       self._save_database()
       
